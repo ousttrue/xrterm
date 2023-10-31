@@ -1,9 +1,7 @@
-"use strict";
+// @ts-check
 
-class XRTSpcCylinder
-{
-  constructor()
-  {
+export default class XRTSpcCylinder {
+  constructor() {
     this.classname_ = 'is-drag-on-cylinder';
     this.geometry_ = null;
     this.mtl_ = null;
@@ -17,9 +15,8 @@ class XRTSpcCylinder
     this.end_pos_ = null;
   }
 
-  init()
-  {
-    this.mtl_ = new THREE.MeshBasicMaterial({color: 0xffff00, wireframe:true, side:THREE.BackSide });
+  init() {
+    this.mtl_ = new THREE.MeshBasicMaterial({ color: 0xffff00, wireframe: true, side: THREE.BackSide });
     this.el_ = document.createElement('a-entity');
     this.el_.classList.add('collidable');
     this.hide();
@@ -29,26 +26,23 @@ class XRTSpcCylinder
     return this.el_;
   }
 
-  get_base()
-  {
+  get_base() {
     return this.el_;
   }
 
-  get_classname()
-  {
+  get_classname() {
     return this.classname_;
   }
 
-  start(grabbed_el_, intersection_el_)
-  {
+  start(grabbed_el_, intersection_el_) {
     let params = grabbed_el_.object3D.children[0].geometry.metadata.parameters;
     // console.log(params);
     if (params.radiusBottom && params.radiusTop) // is this a cylinder?
     {
 
       this.el_.setObject3D('mesh', new THREE.Mesh(new THREE.CylinderGeometry(params.radiusBottom, params.radiusTop,
-                                                                             params.height * 2, 36, 8, true),
-                                                  this.mtl_));
+        params.height * 2, 36, 8, true),
+        this.mtl_));
 
       /*
         height: 4
@@ -73,24 +67,21 @@ class XRTSpcCylinder
     this.start_pos_.normalize();
   }
 
-  during(grabbed_el_, intersection_el_)
-  {
+  during(grabbed_el_, intersection_el_) {
     let during_pos = new THREE.Vector3();
     intersection_el_.object3D.getWorldPosition(during_pos);
-    grabbed_el_.setAttribute('position', {x: 0, y: during_pos.y, z:0});
+    grabbed_el_.setAttribute('position', { x: 0, y: during_pos.y, z: 0 });
 
     let spherical = new THREE.Spherical();
     spherical.setFromCartesianCoords(during_pos.x, during_pos.y, during_pos.z);
-    grabbed_el_.setAttribute('rotation', {x: 0, y: THREE.Math.radToDeg(spherical.theta) - 30, z:0});
+    grabbed_el_.setAttribute('rotation', { x: 0, y: THREE.Math.radToDeg(spherical.theta) - 30, z: 0 });
   }
 
-  end()
-  {
+  end() {
     this.hide();
   }
 
-  hide()
-  {
+  hide() {
     this.el_.setAttribute('visible', false);
     this.el_.classList.remove('collidable');
   }

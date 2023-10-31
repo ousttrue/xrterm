@@ -1,5 +1,3 @@
-"use strict";
-
 const TERMINAL_THEME = {
   theme_foreground: { 'default': '#ffffff' },
   theme_background: { 'default': '#000000' },
@@ -22,3 +20,4 @@ const TERMINAL_THEME = {
   theme_brightBlack: { 'default': '#808080' },
   theme_brightWhite: { 'default': '#ffffff' }
 };
+export default TERMINAL_THEME;

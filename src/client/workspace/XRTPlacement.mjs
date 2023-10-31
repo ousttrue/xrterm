@@ -1,12 +1,13 @@
-"use strict";
+// @ts-check
+import XRTSpcPlane from './XRTSpcPlane.mjs';
+import XRTSpcCylinder from './XRTSpcCylinder.mjs';
+import XRTSpcSphere from './XRTSpcSphere.mjs';
 
 const GRAB_START_OPAC = "property: opacity; dur: 200; from: 1; to: 1";
 const GRAB_FINISH_OPAC = "property: opacity; dur: 200; from: 1; to: 1";
 
-class XRTPlacement
-{
-  constructor()
-  {
+export default class XRTPlacement {
+  constructor() {
     this.el_ = null;
     this.plane_el_ = null;
     this.cylinder_el_ = null;
@@ -19,13 +20,14 @@ class XRTPlacement
     this.space_ = {};
   }
 
-  init()
-  {
+  init() {
     this.el_ = document.createElement('a-entity');
-    let space_instances = [new XRTSpcPlane(), new XRTSpcCylinder(), new XRTSpcSphere()];
+    let space_instances = [
+      new XRTSpcPlane(),
+      new XRTSpcCylinder(),
+      new XRTSpcSphere()];
 
-    for (let spc_i of space_instances)
-    {
+    for (let spc_i of space_instances) {
       spc_i.init();
       this.space_[spc_i.get_classname()] = spc_i;
       this.el_.appendChild(spc_i.get_base());
@@ -34,18 +36,15 @@ class XRTPlacement
     this.hide();
   }
 
-  hide()
-  {
+  hide() {
     for (let spc in this.space_) { this.space_[spc].hide(); }
   }
 
-  get_base()
-  {
+  get_base() {
     return this.el_;
   }
 
-  watch(grabbed_el_, intersection_el_)
-  {
+  watch(grabbed_el_, intersection_el_) {
     this.grabbed_el_ = grabbed_el_;
     this.intersection_el_ = intersection_el_;
 
@@ -54,11 +53,9 @@ class XRTPlacement
     this.grabbed_pre_el_ = this.grabbed_el_;
   }
 
-  grabbing()
-  {
+  grabbing() {
     let current_space = null;
-    if (this.grabbed_el_ != null)
-    {
+    if (this.grabbed_el_ != null) {
       current_space = this.space_[CM.FUNC.get_prefixed_name(this.grabbed_el_.classList, 'is-drag-on-')];
       if (current_space == null) { return; }
     }

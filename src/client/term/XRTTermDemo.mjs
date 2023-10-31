@@ -1,19 +1,15 @@
-"use strict";
+// @ts-check
 
-class XRTTermDemo
-{
-  constructor(ws_)
-  {
+export default class XRTTermDemo {
+  constructor(ws_) {
     this.ws_ = ws_;
   }
 
-  init_gl()
-  {
+  init_gl() {
     this.gl_ = this.ws_.get_context();
   }
 
-  init(self_)
-  {
+  init(self_) {
     self_.tty = self_.el.components['xrtty'];
     const bash = this.init_bash_emulator_();
 
@@ -36,8 +32,7 @@ class XRTTermDemo
     self_.tty.term.loadAddon(self_.aframeaddon);
   }
 
-  show(self_, color_)
-  {
+  show(self_, color_) {
     self_.canvas_texture = new THREE.CanvasTexture(self_.aframeaddon.textureAtlas);
     self_.canvas_texture.needsUpdate = true;
 
@@ -45,29 +40,28 @@ class XRTTermDemo
 
     var mesh = new THREE.Mesh(// new THREE.PlaneGeometry(6, 6, 8, 8),
       glyph_geometry,
-      new THREE.MeshBasicMaterial({map: self_.canvas_texture,
-                                   color: color_, transparent: true}));
+      new THREE.MeshBasicMaterial({
+        map: self_.canvas_texture,
+        color: color_, transparent: true
+      }));
     let radius = 3.0;
-    mesh.geometry.boundingSphere = new THREE.Sphere( new THREE.Vector3(0, 0, 0), radius );
+    mesh.geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), radius);
 
     self_.el.setObject3D('mesh', mesh);
   }
 
-  connect(self_)
-  {
+  connect(self_) {
 
   }
 
-  repl_(echo_, bash_, tty_)
-  {
+  repl_(echo_, bash_, tty_) {
     echo_.read(CM.DEMO_PROMPT, CM.DEMO_CONTINUOUS_PROMPT)
       .then(input => bash_.run(input).then((log_) => { tty_.write(log_); tty_.write('\r\n'); this.repl_(echo_, bash_, tty_); },
-                                           (error_) => { tty_.write(error_); tty_.write('\r\n');  this.repl_(echo_, bash_, tty_);}))
+        (error_) => { tty_.write(error_); tty_.write('\r\n'); this.repl_(echo_, bash_, tty_); }))
       .catch(error => console.log(`Error reading: ${error}`));
   }
 
-  interaction_(self_, event_)
-  {
+  interaction_(self_, event_) {
     let command = CM.Config.key_to_cmd_term(event_.detail);
     let rows = self_.tty.term.rows, cols = self_.tty.term.cols;
     let pos_wld = new THREE.Vector3();
@@ -105,14 +99,13 @@ class XRTTermDemo
       default: break;
     }
     self_.el.setAttribute('animation', "property: position; to:"
-                          + pos_wld.x.toString() + " " +  pos_wld.y.toString() + " " +  pos_wld.z.toString()
-                          + "; dur: 200; easing: easeOutExpo; loop: false");
+      + pos_wld.x.toString() + " " + pos_wld.y.toString() + " " + pos_wld.z.toString()
+      + "; dur: 200; easing: easeOutExpo; loop: false");
     // animation="property: position; to: 1 8 -10; dur: 2000; easing: linear; loop: true"
     // tty.term.resize(rows, cols);
   }
 
-  init_bash_emulator_()
-  {
+  init_bash_emulator_() {
     var emulator = bashEmulator({
       workingDirectory: '/',
       fileSystem: {
@@ -144,44 +137,37 @@ class XRTTermDemo
     return emulator;
   }
 
-  register()
-  {
-    let self_ = this;
-
-    AFRAME.registerComponent('term-demo', {
-      dependencies: ['xrtty'],
-      schema: { color: { default: '#ff00ff' } },
-      init: function ()
-      {
-        this.initialized_ = false;
-      },
-      tick: function (time_, delta_)
-      {
-        if (this.initialized_ != false)
-        {
-          this.aframeaddon.tick();
-          this.canvas_texture.needsUpdate = true;
-        }
-        else
-        {
-          self_.init_gl(this);
-
-          self_.init(this);
-          self_.show(this, this.data.color);
-          self_.connect(this);
-
-          this.initialized_ = true;
-        }
-      },
-      tock: function (time_, delta_)
-      {
-      },
-
-    });
-  }
-
-  get_dragging_type()
-  {
+  get_dragging_type() {
     return CM.WS_PLACEMENT.PLANE;
   }
+
+  tick() {
+    if (this.initialized_ != false) {
+      this.aframeaddon.tick();
+      this.canvas_texture.needsUpdate = true;
+    }
+    else {
+      self_.init_gl(this);
+
+      self_.init(this);
+      self_.show(this, this.data.color);
+      self_.connect(this);
+
+      this.initialized_ = true;
+    }
+  }
 }
+
+
+console.log('AFRAME.registerComponent', 'term-demo')
+AFRAME.registerComponent('term-demo', {
+  dependencies: ['xrtty'],
+  schema: { color: { default: '#ff00ff' } },
+  init: function() {
+    this.impl = new XRTTermDemo(this);
+  },
+  tick: function(time_, delta_) {
+    this.impl.tick();
+  },
+});
+

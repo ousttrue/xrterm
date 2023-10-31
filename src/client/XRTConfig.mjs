@@ -1,30 +1,25 @@
-"use strict";
+import CM from '../Common.mjs'
 
-class XRTConfig
-{
-  constructor()
-  {
-    // this.config = require("config");
+export default class XRTConfig {
+  constructor() {
   }
 
-  get_modkey()
-  {
+  get_modkey() {
     return 'MetaLeft';
   }
 
-  get_focus()
-  {
+  get_focus() {
     // hover gazing or click
   }
 
-  get_move()
-  {
+  get_move() {
     // grab & headmove or click & drag
   }
 
-
-  key_to_cmdtype(pressed_)
-  {
+  /**
+   * @param {string} pressed_
+   */
+  key_to_cmdtype(pressed_) {
     console.log(pressed_ + ': cmd');
     if (pressed_ == 'Enter') { return CM.WS_CMD.OPEN_TERMINAL; }
     if (pressed_ == 'Tab') { return CM.WS_CMD.OPEN_BROWSER; }
@@ -32,8 +27,10 @@ class XRTConfig
     return null;
   }
 
-  key_to_cmd_term(key_)
-  {
+  /**
+   * @param {string} key_
+   */
+  key_to_cmd_term(key_) {
     let result = 0;
     switch (key_) {
       case '\u001b[A': // Up
@@ -65,5 +62,3 @@ class XRTConfig
     return result;
   }
 }
-
-CM.Config = new XRTConfig();

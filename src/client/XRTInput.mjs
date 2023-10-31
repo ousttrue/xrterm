@@ -1,14 +1,18 @@
-"use strict";
+// @ts-check
+import CM from '../Common.mjs';
+import { bind } from '../util.mjs';
 
-var should_capture_keyevent = function (event) {
-  if (event.metaKey) { return false; }
-  return document.activeElement === document.body;
-};
+export default class XRTInput {
+  /**
+   * @type {AFRAME.AEntity?}
+   */
+  target_;
 
-class XRTInput
-{
-  constructor()
-  {
+  /**
+   * @type {Map<string, boolean>}
+   */
+  keystate_;
+  constructor() {
     this.target_ = null;
     this.keystate_ = {};
     this.sysstate_ = {};
@@ -16,8 +20,10 @@ class XRTInput
     this.released_ = {};
   }
 
-  init(el_)
-  {
+  /**
+   * @param {AFRAME.AEntity} el_
+   */
+  init(el_) {
     this.target_ = el_;
 
     // Initial system state
@@ -35,31 +41,30 @@ class XRTInput
     this.on_focus_();
   }
 
-  finish(el_)
-  {
+  finish() {
     this.remove_keyevent_listeners_();
     this.remove_visibility_event_listeners_();
     this.clear();
   }
 
-  clear()
-  {
+  clear() {
     this.keystate_ = {};
     this.sysstate_ = {};
     this.pressed_ = {};
     this.released_ = {};
   }
 
-  tick()
-  {
+  tick() {
   }
 
-  tock()
-  {
+  tock() {
     this.pressed_ = {};
     this.released_ = {};
   }
 
+  /**
+  * @returns boolean
+  */
   get_keystate(code_) { return this.keystate_[code_]; }
   get_sysstate(code_) { return this.sysstate_[code_]; }
   get_pressed() { return this.pressed_; }
@@ -68,62 +73,54 @@ class XRTInput
   on_blur_() { this.remove_keyevent_listeners_(); }
   on_focus_() { this.add_keyevent_listeners_(); }
 
-  on_key_down_(event_)
-  {
-    if (!should_capture_keyevent(event_)) { return; }
+  on_key_down_(event_) {
+    if ((event_.metaKey || document.activeElement !== document.body)) { return; }
     let code = event_.code || KEYCODE_TO_CODE[event_.keyCode];
 
     if (this.keystate_[code] != true) { this.pressed_[code] = true; }
     this.keystate_[code] = true;
   }
 
-  on_key_up_(event_)
-  {
+  on_key_up_(event_) {
     let code = event_.code || KEYCODE_TO_CODE[event_.keyCode];
 
     if (this.keystate_[code] == true) { this.released_[code] = true; }
     delete this.keystate_[code];
   }
 
-  on_mouse_out_(event_)
-  {
+  on_mouse_out_(event_) {
     event_ = event_ ? event_ : window.event;
     let from = event_.relatedTarget || event_.toElement;
     if (!from || from.nodeName == "HTML") { this.sysstate_[CM.POINTER_ACTIVE] = false; }
   }
 
-  on_mouse_over_(event_)
-  {
+  on_mouse_over_(event_) {
     event_ = event_ ? event_ : window.event;
     let to = event_.relatedTarget || event_.fromElement;
     if (!to || to.nodeName == "HTML") { this.sysstate_[CM.POINTER_ACTIVE] = true; }
   }
 
-  on_visibility_change_()
-  {
+  on_visibility_change_() {
     this.clear();
     if (document.hidden) { this.on_blur_(); }
     else { this.on_focus_(); }
   }
 
-  add_visibility_event_listeners_()
-  {
+  add_visibility_event_listeners_() {
     this.clear();
     window.addEventListener('blur', this.target_.onBlur);
     window.addEventListener('focus', this.target_.onFocus);
     document.addEventListener('visibilitychange', this.target_.onVisibilityChange);
   }
 
-  remove_visibility_event_listeners_()
-  {
+  remove_visibility_event_listeners_() {
     this.clear();
     window.removeEventListener('blur', this.target_.onBlur);
     window.removeEventListener('focus', this.target_.onFocus);
     document.removeEventListener('visibilitychange', this.target_.onVisibilityChange);
   }
 
-  add_keyevent_listeners_()
-  {
+  add_keyevent_listeners_() {
     this.clear();
     window.addEventListener('keydown', this.target_.onKeyDown);
     window.addEventListener('keyup', this.target_.onKeyUp);
@@ -131,8 +128,7 @@ class XRTInput
     window.addEventListener('mouseover', this.target_.onMouseOver);
   }
 
-  remove_keyevent_listeners_()
-  {
+  remove_keyevent_listeners_() {
     this.clear();
     window.removeEventListener('keydown', this.target_.onKeyDown);
     window.removeEventListener('keyup', this.target_.onKeyUp);
@@ -140,8 +136,7 @@ class XRTInput
     window.removeEventListener('mouseover', this.target_.onMouseOver);
   }
 
-  is_empty_object(keys_)
-  {
+  is_empty_object(keys_) {
     for (let key in keys_) { return false; }
     return true;
   }

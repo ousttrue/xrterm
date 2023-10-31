@@ -9,47 +9,25 @@
     <script src="src/lib/aframe/aframe-v1.2.0.js"></script>
     <script type="text/javascript" src="src/lib/xterm/xterm.js"></script>
     <script src="src/lib/xterm-addon/xterm-addon-aframe.js"></script>
-    <script src="src/Common.js"></script>
-    <script src="src/util.js"></script>
-    <script src="src/client/XRTInput.js"></script>
-    <script src="src/client/XRTConfig.js"></script>
-    <script src="src/client/XRTCommand.js"></script>
-    <script src="src/client/workspace/XRTSpcPlane.js"></script>
-    <script src="src/client/workspace/XRTSpcCylinder.js"></script>
-    <script src="src/client/workspace/XRTSpcSphere.js"></script>
-    <script src="src/client/workspace/XRTPlacement.js"></script>
-    <script src="src/client/workspace/XRTRig.js"></script>
-    <script src="src/client/workspace/XRTWorkspace.js"></script>
-    <script src="src/client/XRTSession.js"></script>
-    <script src="src/client/XRTTheme.js"></script>
-    <script src="src/client/term/XRTTty.js"></script>
-    <script src="src/client/term/XRTTermBase.js"></script>
-    <script src="src/client/term/XRTTermBare.js"></script>
-    <script src="src/client/term/XRTTermDX.js"></script>
-    <script src="src/client/xrterm.js"></script>
-    <script>
-      CM.BUILD = "RAW";
-      let xrterm = new XRTERM();
-      xrterm.init();
+    <script type="module" src="index.mjs"></script>
+    <script id="scene" type="text/html">
+      <a-scene>
+        <a-camera wasd-controls-enabled="false"></a-camera>
+        <a-entity workspace raycaster="objects: .collidable">
+          <a-plane
+            term-bare
+            xrtty
+            class="collidable is-drag-on-plane"
+            height="4"
+            width="6"
+            rotation="0 0 0"
+            position="0 5 -10"
+            scale="0.5 0.5 0.5"
+          ></a-plane>
+        </a-entity>
+      </a-scene>
     </script>
   </head>
 
-  <body>
-    <div id="app"></div>
-    <a-scene>
-      <a-camera wasd-controls-enabled="false"></a-camera>
-      <a-entity workspace raycaster="objects: .collidable">
-        <a-plane
-          term-bare
-          xrtty
-          class="collidable is-drag-on-plane"
-          height="4"
-          width="6"
-          rotation="0 0 0"
-          position="0 5 -10"
-          scale="0.5 0.5 0.5"
-        ></a-plane>
-      </a-entity>
-    </a-scene>
-  </body>
+  <body></body>
 </html>

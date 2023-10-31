@@ -1,37 +1,32 @@
-"use strict";
+// @ts-check
+import CM from '../../Common.mjs';
 
-class XRTSpcPlane
-{
-  constructor()
-  {
+export default class XRTSpcPlane {
+  constructor() {
     this.classname_ = 'is-drag-on-plane';
     this.el_ = null;
     this.grabbed_offset_pos_ = new THREE.Vector3();
   }
 
-  init()
-  {
+  init() {
     this.el_ = document.createElement('a-entity');
     this.el_.setObject3D('mesh', new THREE.Mesh(new THREE.PlaneGeometry(6, 6, 8, 8),
-                                                new THREE.MeshBasicMaterial({color: 0xff0000, wireframe:true })));
+      new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })));
     this.el_.classList.add('collidable');
     this.hide();
 
     return this.el_;
   }
 
-  get_base()
-  {
+  get_base() {
     return this.el_;
   }
 
-  get_classname()
-  {
+  get_classname() {
     return this.classname_;
   }
 
-  start(grabbed_el_, intersection_el_)
-  {
+  start(grabbed_el_, intersection_el_) {
     CM.FUNC.copy_mtx(this.el_.object3D, grabbed_el_.object3D.matrixWorld);
 
     let intersected_pos = new THREE.Vector3();
@@ -40,21 +35,18 @@ class XRTSpcPlane
     this.grabbed_offset_pos_.sub(intersected_pos);
   }
 
-  during(grabbed_el_, intersection_el_)
-  {
+  during(grabbed_el_, intersection_el_) {
     let pointer_pos = new THREE.Vector3();
     intersection_el_.object3D.getWorldPosition(pointer_pos);
     pointer_pos.add(this.grabbed_offset_pos_);
     grabbed_el_.setAttribute('position', pointer_pos);
   }
 
-  end()
-  {
+  end() {
     this.hide();
   }
 
-  hide()
-  {
+  hide() {
     this.el_.setAttribute('visible', false);
     this.el_.classList.remove('collidable');
   }
