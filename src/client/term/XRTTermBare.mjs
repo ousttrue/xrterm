@@ -1,7 +1,4 @@
 /// @ts-check
-/// <reference path="../../../node_modules/@types/three/index.d.ts" />
-
-import CM from '../../Common.mjs';
 import XRTTty from './XRTTty.mjs';
 
 const DEFAULT_BG_COLOR = 0x333333;
@@ -15,8 +12,6 @@ export default class XRTTermBare {
   constructor(component) {
     // @ts-ignore
     const tty = /** @type {XRTTty} */ (component.el.components['xrtty'].impl);
-    console.log(tty);
-
     const aframeaddon = tty.aframeaddon;
 
     // create BG material and mesh
@@ -49,14 +44,14 @@ export default class XRTTermBare {
         map: this.canvas_texture,
         color: this.fg_color_, transparent: true
       }));
-    // term_mesh.geometry.boundingSphere = new THREE.Sphere( new THREE.Vector3(0, 0, 0), 40 );
     this.el_term_ = document.createElement('a-entity');
     this.el_term_.setObject3D('mesh', term_mesh);
 
     console.log(aframeaddon.canvasSize);
     this.el_term_.object3D.position.set(
       -aframeaddon.canvasSize.x * 0.022,
-      aframeaddon.canvasSize.y * 0.022, 0.1);
+      aframeaddon.canvasSize.y * 0.022, 
+      0.1);
 
     component.el.appendChild(this.el_term_);
 

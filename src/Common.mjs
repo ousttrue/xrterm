@@ -1,5 +1,3 @@
-import XRTConfig from './client/XRTConfig.mjs';
-
 class Common {
   constructor() {
   }
@@ -121,9 +119,6 @@ const CM = {
   ],
 
   FUNC: new Common(),
-
-  Config: new XRTConfig(),
 };
-
 
 export default CM;
