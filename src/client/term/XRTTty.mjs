@@ -5,6 +5,7 @@
  * MIT license
  */
 
+import CM from '../../Common.mjs';
 import TERMINAL_THEME from '../XRTTheme.mjs';
 
 export default class XRTTty {
@@ -19,19 +20,24 @@ export default class XRTTty {
   term;
 
   /**
+   * @type AframeAddon
+   */
+  aframeaddon;
+
+  /**
    * @param {AFRAME.AComponent} obj_
    */
-  constructor(obj_) {
+  constructor(component) {
     console.log('new tty');
     this.terminalElement = document.createElement('div');
     this.terminalElement.setAttribute('style',
       `width: 1024px; height: 1024px; opacity: 0.0; overflow: hidden;`);
-    obj_.el.appendChild(this.terminalElement);
+    component.el.appendChild(this.terminalElement);
 
     // Build up a theme object
-    const theme = Object.keys(obj_.data).reduce((theme, key) => {
+    const theme = Object.keys(component.data).reduce((theme, key) => {
       if (!key.startsWith('theme_')) { return theme; }
-      const data = obj_.data[key];
+      const data = component.data[key];
       if (!data) { return theme; }
       theme[key.slice('theme_'.length)] = data;
       return theme;
@@ -42,28 +48,44 @@ export default class XRTTty {
       allowTransparency: false,
       cursorBlink: true,
       disableStdin: false,
-      rows: obj_.data.rows,
-      cols: obj_.data.cols,
+      rows: component.data.rows,
+      cols: component.data.cols,
       fontSize: 12
     });
     console.log(this.term);
 
     this.term.open(this.terminalElement);
-    this.term.onRender((o_) => {
-      // this.redraw(obj_);
-    });
     this.term.onData((/** @type {string} */ data) => {
-      obj_.el.emit('xrtty-data', { data });
+      component.el.emit('xrtty-data', { data });
+    });
+
+    // @ts-ignore
+    const gl = document.querySelector('a-scene').renderer.getContext();
+    this.aframeaddon = new AframeAddon(gl);
+    this.term.loadAddon(this.aframeaddon);
+
+    // this.show(component.el, component.data.color);
+
+    const message = 'Initialized\r\n';
+    this.term.write(message);
+
+    const socket = new WebSocket(`wss://${CM.COMM_HOST}:${CM.COMM_PORT}/`);
+    // Listen on data, write it to the terminal
+    socket.onmessage = ({ data }) => {
+      this.term.write(data);
+    };
+    socket.onclose = () => {
+      this.term.write('\r\nConnection closed.\r\n');
+    };
+    // @ts-ignore
+    component.el.addEventListener('xrtty-data', ({ detail }) => {
+      socket.send(detail.data);
     });
   }
 
-  // redraw(obj_) {
-  //   return;
-  //   const material = obj_.el.getObject3D('mesh').material;
-  //   if (!material.map) { return; }
-  //   obj_.canvasContext.drawImage(obj_.cursorCanvas, 0, 0);
-  //   material.map.needsUpdate = true;
-  // }
+  tick() {
+    this.aframeaddon.tick();
+  }
 }
 
 console.log('AFRAME.registerComponent', 'xrtty')
@@ -97,5 +119,10 @@ AFRAME.registerComponent('xrtty', {
       console.log('cleared');
     });
   },
+  /**
+  * @this {AFRAME.AComponent & {impl: XRTTty}}
+  */
+  tick: function() {
+    this.impl.tick();
+  }
 });
-
