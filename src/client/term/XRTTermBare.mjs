@@ -25,7 +25,7 @@ export default class XRTTermBare {
       aframeaddon.canvasSize.y * 0.044, 8, 8);
     this.bg_material_ = new THREE.MeshBasicMaterial({
       color: DEFAULT_BG_COLOR, side: THREE.FrontSide,
-      opacity: 0.5, transparent: true
+      opacity: 1, transparent: true
     });
     component.el.setObject3D('mesh', new THREE.Mesh(
       this.bg_geometry_,
@@ -59,6 +59,10 @@ export default class XRTTermBare {
       aframeaddon.canvasSize.y * 0.022, 0.1);
 
     component.el.appendChild(this.el_term_);
+
+    tty.term.onData(() => {
+      this.canvas_texture.needsUpdate = true;
+    });
   }
 
   focused() {
@@ -67,10 +71,6 @@ export default class XRTTermBare {
 
   unfocused() {
     this.bg_material_.opacity = UNFOCUSED_OPACITY;
-  }
-
-  tick() {
-    this.canvas_texture.needsUpdate = true;
   }
 }
 
@@ -87,12 +87,5 @@ AFRAME.registerComponent('term-bare', {
   */
   init: function() {
     this.impl = new XRTTermBare(this);
-  },
-
-  /**
-  * @this {AFRAME.AComponent & {impl: XRTTermBare}}
-  */
-  tick: function(time_, delta_) {
-    this.impl.tick();
   },
 });

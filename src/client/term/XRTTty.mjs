@@ -55,16 +55,11 @@ export default class XRTTty {
     console.log(this.term);
 
     this.term.open(this.terminalElement);
-    this.term.onData((/** @type {string} */ data) => {
-      component.el.emit('xrtty-data', { data });
-    });
 
     // @ts-ignore
     const gl = document.querySelector('a-scene').renderer.getContext();
     this.aframeaddon = new AframeAddon(gl);
     this.term.loadAddon(this.aframeaddon);
-
-    // this.show(component.el, component.data.color);
 
     const message = 'Initialized\r\n';
     this.term.write(message);
@@ -72,18 +67,19 @@ export default class XRTTty {
     const socket = new WebSocket(`wss://${CM.COMM_HOST}:${CM.COMM_PORT}/`);
     // Listen on data, write it to the terminal
     socket.onmessage = ({ data }) => {
+      console.log(data);
       this.term.write(data);
     };
     socket.onclose = () => {
       this.term.write('\r\nConnection closed.\r\n');
     };
-    // @ts-ignore
-    component.el.addEventListener('xrtty-data', ({ detail }) => {
-      socket.send(detail.data);
+    this.term.onData((/** @type {string} */ data) => {
+      socket.send(data);
     });
   }
 
   tick() {
+    this.term.focus();
     this.aframeaddon.tick();
   }
 }
