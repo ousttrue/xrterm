@@ -42,6 +42,7 @@
     "concurrently": "^6.3.0",
     "config": "^3.3.6",
     "diff-dom": "^4.2.2",
+    "express-ws": "^5.0.2",
     "fs-jetpack": "^4.2.0",
     "html-require-loader": "^1.0.1",
     "ncp": "^2.0.0",

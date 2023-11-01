@@ -1,54 +1,41 @@
 // @ts-check
 
 import http from 'http';
-import { WebSocketServer } from 'ws';
-import os from 'os';
+import WebSocket, { WebSocketServer } from 'ws';
 import pty from 'node-pty';
 import CM from '../Common.mjs';
 
-export default class XRTShell {
-  constructor() {
-    this.svr_port_ = CM.COMM_PORT;
-    this.shell_ = os.platform() === 'win32' ? 'cmd.exe' : 'bash';
-    this.cmd_server_ = new http.Server();
-    /*
-      const server = new https.createServer({
-      key: fs.readFileSync('./src/server/private.key'),
-      cert: fs.readFileSync('./src/server/private.pem')
-      });
-      */
-    this.socket_ = new WebSocketServer({ server: this.cmd_server_ });
-  }
+const SHELL = 'cmd.exe';
 
-  init() {
-    this.socket_.on('connection', (connection) => {
-      const ptyProcess = pty.spawn(this.shell_, [], {
-        cwd: process.env.HOME,
-        env: process.env
-      });
+/**
+ * @param {WebSocket} connection
+ */
+function onConnection(connection) {
+  console.log(`new connection: ${connection}`)
+  const env = Object.assign({ cwd: process.env.HOME }, process.env);
+  const ptyProcess = pty.spawn(SHELL, [], env);
 
-      ptyProcess.on('data', (data) => {
-        connection.send(data);
-      });
+  ptyProcess.on('data', (data) => {
+    connection.send(data);
+  });
+  ptyProcess.on('exit', () => {
+    console.log('pty.exit');
+    connection.close();
+  });
 
-      connection.on('message', (message) => {
-        ptyProcess.write(message);
-      });
-
-      ptyProcess.once('close', () => {
-        connection.removeAllListeners();
-        connection.close();
-      });
-
-      connection.once('close', () => {
-        ptyProcess.removeAllListeners();
-        ptyProcess.destroy();
-      });
-    });
-  }
-
-  start() {
-    this.cmd_server_.listen(this.svr_port_);
-    console.log("Server running on port " + String(this.svr_port_));
-  }
+  connection.on('message', (message, isBinary) => {
+    // @ts-ignore
+    ptyProcess.write(isBinary ? message.toString() : message);
+  });
+  connection.on('close', () => {
+    console.log('ws.close');
+    ptyProcess.kill();
+  });
 }
+
+const server = new http.Server();
+const wsServer = new WebSocketServer({ server });
+wsServer.on('connection', onConnection);
+server.listen(CM.COMM_PORT);
+console.log(`ws://localhost:${CM.COMM_PORT}`)
+
