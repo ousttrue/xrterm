@@ -1,10 +1,18 @@
 // @ts-check
+import https from 'https'
+import fs from 'fs';
 
-import http from 'http';
 import WebSocket, { WebSocketServer } from 'ws';
+import express from 'express'
+import expressWs from 'express-ws'
 import pty from 'node-pty';
+
 import CM from '../Common.mjs';
 
+const PORT = CM.COMM_PORT
+const HOST = CM.COMM_HOST
+const KEY = HOST + '-key.pem'
+const PEM = HOST + '.pem'
 const SHELL = 'cmd.exe';
 
 /**
@@ -33,9 +41,21 @@ function onConnection(connection) {
   });
 }
 
-const server = new http.Server();
-const wsServer = new WebSocketServer({ server });
-wsServer.on('connection', onConnection);
-server.listen(CM.COMM_PORT);
-console.log(`ws://localhost:${CM.COMM_PORT}`)
+const _app = express();
+const server = https.createServer({
+  key: fs.readFileSync(KEY),
+  cert: fs.readFileSync(PEM),
+}, _app)
+const appWs = expressWs(_app, server);
+// const wss = appWs.getWss('/');
+
+appWs.app.ws('/', (
+    /** @type {WebSocket} */ ws,
+    /** @type {any} */ _req
+) => {
+  // console.log(ws);
+  onConnection(ws);
+});
+appWs.app.use(express.static('.'))
+server.listen(PORT, HOST, () => console.log(`https://${HOST}:${PORT}`))
 

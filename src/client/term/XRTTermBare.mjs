@@ -35,7 +35,7 @@ export default class XRTTermBare {
     const message = 'Initialized\r\n';
     this.tty.term.write(message);
 
-    const socket = new WebSocket('ws://localhost:' + String(CM.COMM_PORT) + '/');
+    const socket = new WebSocket(`wss://${CM.COMM_HOST}:${CM.COMM_PORT}/`);
     // Listen on data, write it to the terminal
     socket.onmessage = ({ data }) => { this.tty.term.write(data); };
     socket.onclose = () => { this.tty.term.write('\r\nConnection closed.\r\n'); };

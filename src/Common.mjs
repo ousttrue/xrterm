@@ -77,6 +77,7 @@ const CM = {
   BUILD: 'UNDEFINED',
   CONFIG_FILENAME: 'xrterm-conf.json',
   COMM_PORT: 8023,
+  COMM_HOST: '192.168.233.107',
 
   WS_MODE: {
     NONE: 0,
