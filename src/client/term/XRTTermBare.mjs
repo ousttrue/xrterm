@@ -55,7 +55,7 @@ export default class XRTTermBare {
 
     component.el.appendChild(this.el_term_);
 
-    tty.term.onData(() => {
+    tty.term.onRender(() => {
       this.canvas_texture.needsUpdate = true;
     });
   }
