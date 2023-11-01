@@ -1,9 +1,9 @@
 /// @ts-check
 import XRTTty from './XRTTty.mjs';
-
 const DEFAULT_BG_COLOR = 0x333333;
 const FOCUSED_OPACITY = 0.8;
 const UNFOCUSED_OPACITY = 0.4;
+const THREE = AFRAME.THREE;
 
 export default class XRTTermBare {
   /**
@@ -13,6 +13,7 @@ export default class XRTTermBare {
     // @ts-ignore
     const tty = /** @type {XRTTty} */ (component.el.components['xrtty'].impl);
     const aframeaddon = tty.aframeaddon;
+    console.log(aframeaddon.canvasSize);
 
     // create BG material and mesh
     this.bg_geometry_ = new THREE.PlaneGeometry(
@@ -22,9 +23,9 @@ export default class XRTTermBare {
       color: DEFAULT_BG_COLOR, side: THREE.FrontSide,
       opacity: 1, transparent: true
     });
-    component.el.setObject3D('mesh', new THREE.Mesh(
-      this.bg_geometry_,
-      this.bg_material_));
+    const mesh = new THREE.Mesh(this.bg_geometry_, this.bg_material_)
+
+    component.el.setObject3D('mesh', mesh);
     component.el.addEventListener('raycaster-intersected', (obj_) => {
       this.focused();
     });
@@ -50,7 +51,7 @@ export default class XRTTermBare {
     console.log(aframeaddon.canvasSize);
     this.el_term_.object3D.position.set(
       -aframeaddon.canvasSize.x * 0.022,
-      aframeaddon.canvasSize.y * 0.022, 
+      aframeaddon.canvasSize.y * 0.022,
       0.1);
 
     component.el.appendChild(this.el_term_);
