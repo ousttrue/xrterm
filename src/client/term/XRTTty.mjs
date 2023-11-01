@@ -89,7 +89,11 @@ export default class XRTTty {
     const message = 'Initialized\r\n';
     this.term.write(message);
 
-    const socket = new WebSocket(`wss://${CM.COMM_HOST}:${CM.COMM_PORT}/`);
+    const protocol = (location.protocol == "https:") ? "wss" : "ws";
+    // const url = `${protocol}://${location.hostname}:${WS_PORT}`;
+    const url = `${protocol}://${location.hostname}`;
+
+    const socket = new WebSocket(`${url}:${CM.COMM_PORT}/`);
     // Listen on data, write it to the terminal
     socket.onmessage = ({ data }) => {
       console.log(data);

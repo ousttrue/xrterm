@@ -1,6 +1,7 @@
 // @ts-check
 import https from 'https'
 import fs from 'fs';
+import os from 'os';
 
 import WebSocket, { WebSocketServer } from 'ws';
 import express from 'express'
@@ -10,17 +11,17 @@ import pty from 'node-pty';
 import CM from '../Common.mjs';
 
 const PORT = CM.COMM_PORT
-const HOST = CM.COMM_HOST
-const KEY = HOST + '-key.pem'
-const PEM = HOST + '.pem'
-const SHELL = 'cmd.exe';
+const KEY = 'localhost-key.pem'
+const PEM = 'localhost.pem'
+
+const SHELL = os.platform() === "win32" ? 'cmd.exe' : '/usr/bin/bash';
 
 /**
  * @param {WebSocket} connection
  */
 function onConnection(connection) {
-  console.log(`new connection: ${connection}`)
   const env = Object.assign({ cwd: process.env.HOME }, process.env);
+  console.log(`launch: ${SHELL}`)
   const ptyProcess = pty.spawn(SHELL, [], env);
 
   ptyProcess.on('data', (data) => {
@@ -57,5 +58,5 @@ appWs.app.ws('/', (
   onConnection(ws);
 });
 appWs.app.use(express.static('.'))
-server.listen(PORT, HOST, () => console.log(`https://${HOST}:${PORT}`))
+server.listen(PORT, '0.0.0.0', () => console.log(`https://0.0.0.0:${PORT}`))
 

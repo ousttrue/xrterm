@@ -1,84 +1,8 @@
 {
-  "name": "xrterm",
-  "version": "0.0.1",
-  "description": "Terminal Emulator for xR environment",
-  "scripts": {
-    "dev": "echo \"Error: no dev mode specified\" && exit 1",
-    "dist": "electron-builder",
-    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "server": "nodemon ./src/server/run.js",
-    "client": "webpack-dev-server --host 0.0.0.0 --hot --progress --port 8000 ",
-    "client-ssl": "echo \"Error: SSL mode is not available; webpack-dev-server --https --host 0.0.0.0 --progress --colors --hot-only --inline --port 8443 --disableHostCheck=true\"",
-    "start": "concurrently --kill-others \"npm run server\" \"npm run client\"",
-    "start-ssl": "echo \"Error: SSL mode is not available; concurrently --kill-others \"npm run server\" \"npm run client-ssl\"\""
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/szk/xrterm.git"
-  },
-  "keywords": [
-    "vr",
-    "xr",
-    "aframe",
-    "terminal",
-    "commandline",
-    "xrterm",
-    "xterm"
-  ],
-  "author": "szk",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/szk/xrterm/issues"
-  },
-  "homepage": "https://xrterm.com/",
   "dependencies": {
-    "@babel/core": "^7.15.5",
-    "@babel/preset-env": "^7.15.6",
-    "@types/aframe": "^1.2.4",
-    "@types/three": "^0.158.1",
-    "babel-loader": "^8.2.2",
-    "bufferutil": "^4.0.4",
-    "concurrently": "^6.3.0",
-    "config": "^3.3.6",
-    "diff-dom": "^4.2.2",
+    "express": "^4.18.2",
     "express-ws": "^5.0.2",
-    "fs-jetpack": "^4.2.0",
-    "html-require-loader": "^1.0.1",
-    "ncp": "^2.0.0",
-    "node-pty": "^0.10.1",
-    "nodemon": "^2.0.13",
-    "nunjucks": "^3.2.3",
-    "source-map-support": "^0.5.20",
-    "utf-8-validate": "^5.0.6",
-    "webpack": "^5.56.0",
-    "webpack-cli": "^4.8.0",
-    "webpack-dev-server": "^4.3.0"
-  },
-  "devDependencies": {
-    "@types/node": "^16.10.2",
-    "@vitejs/plugin-basic-ssl": "^1.0.1",
-    "electron": "^27.0.2",
-    "electron-builder": "^24.6.4",
-    "node-gyp": "^8.2.0",
-    "typescript": "^4.4.3",
-    "yarn": "^1.22.15"
-  },
-  "build": {
-    "appId": "com.xrterm.prototype",
-    "mac": {
-      "target": "dmg"
-    },
-    "directories": {
-      "buildResources": "build"
-    },
-    "nodeGypRebuild": false,
-    "asar": true,
-    "files": [
-      "index.html",
-      "electron/index.js",
-      "src/**/*",
-      "scene/**/*"
-    ]
+    "node-pty": "^1.0.0",
+    "ws": "^8.14.2"
   }
 }
