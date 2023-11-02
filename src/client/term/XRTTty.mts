@@ -1,4 +1,6 @@
 // @ts-check
+import { Terminal } from '../../../xterm.js-4.13.0/src/browser/public/Terminal.mjs';
+import { AframeAddon } from '../../../xterm.js-4.13.0/addons/xterm-addon-webgl/src/AframeAddon.mjs';
 
 /*
  * based on aframe-xterm-component by rangermauve

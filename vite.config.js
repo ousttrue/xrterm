@@ -14,8 +14,8 @@ export default {
   ],
   resolve: {
     alias: {
-      "browser": path.resolve(__dirname, "xterm.js-4.14.1/src/browser"),
-      "common": path.resolve(__dirname, "xterm.js-4.14.1/src/common"),
+      "browser": path.resolve(__dirname, "xterm.js-4.13.0/src/browser"),
+      "common": path.resolve(__dirname, "xterm.js-4.13.0/src/common"),
     },
   },
 }

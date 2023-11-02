@@ -24,19 +24,19 @@ function onConnection(connection) {
   console.log(`launch: ${SHELL}`)
   const ptyProcess = pty.spawn(SHELL, [], env);
 
-  ptyProcess.on('data', (data) => {
+  ptyProcess.onData((data) => {
     connection.send(data);
   });
-  ptyProcess.on('exit', () => {
+  ptyProcess.onExit(() => {
     console.log('pty.exit');
     connection.close();
   });
 
-  connection.on('message', (message, isBinary) => {
+  connection.onmessage((message, isBinary) => {
     // @ts-ignore
     ptyProcess.write(isBinary ? message.toString() : message);
   });
-  connection.on('close', () => {
+  connection.onclose(() => {
     console.log('ws.close');
     ptyProcess.kill();
   });
