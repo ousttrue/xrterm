@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@types/aframe": "^1.2.4",
     "@vitejs/plugin-basic-ssl": "^1.0.1",
     "express": "^4.18.2",
     "express-ws": "^5.0.2",

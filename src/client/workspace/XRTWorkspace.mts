@@ -2,10 +2,7 @@
 import CM from '../../Common.mjs'
 
 export default class XRTWorkspace {
-  /**
-   * @param {AFRAME.AEntity} el
-   */
-  constructor(el) {
+  constructor(_: AFRAME.AComponent) {
     switch (CM.BUILD) {
       case 'RAW': console.log("this is raw"); break;
       case 'ELECTRON': console.log("this is electron"); break;
@@ -33,7 +30,7 @@ AFRAME.registerComponent('workspace', {
   * @this {AFRAME.AComponent & {impl: XRTWorkspace}}
   */
   init: function() {
-    this.impl = new XRTWorkspace(this.el);
+    this.impl = new XRTWorkspace(this);
 
     this.el.addEventListener('raycaster-intersected', e_ => {
       console.log('raycaster intersected');

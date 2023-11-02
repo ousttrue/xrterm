@@ -30,25 +30,10 @@ const TERMINAL_THEME = {
 };
 
 export default class XRTTty {
-  /**
-   * @type HTMLElement
-   */
-  terminalElement;
+  terminalElement: HTMLElement;
+  term: any;
 
-  /**
-   * @type Terminal
-   */
-  term;
-
-  /**
-   * @type AframeAddon
-   */
-  aframeaddon;
-
-  /**
-   * @param {AFRAME.AComponent} component
-   */
-  constructor(component) {
+  constructor(component: AFRAME.AComponent) {
     console.log('new tty');
     this.terminalElement = document.createElement('div');
     this.terminalElement.setAttribute('style',
@@ -57,12 +42,12 @@ export default class XRTTty {
 
     // Build up a theme object
     const theme = Object.keys(component.data).reduce((theme, key) => {
-      if (!key.startsWith('theme_')) { 
-        return theme; 
+      if (!key.startsWith('theme_')) {
+        return theme;
       }
       const data = component.data[key];
-      if (!data) { 
-        return theme; 
+      if (!data) {
+        return theme;
       }
       theme[key.slice('theme_'.length)] = data;
       return theme;
