@@ -32,11 +32,11 @@ function onConnection(connection) {
     connection.close();
   });
 
-  connection.onmessage((message, isBinary) => {
+  connection.on('message', (message, isBinary) => {
     // @ts-ignore
     ptyProcess.write(isBinary ? message.toString() : message);
   });
-  connection.onclose(() => {
+  connection.on('close', () => {
     console.log('ws.close');
     ptyProcess.kill();
   });

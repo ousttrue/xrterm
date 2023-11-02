@@ -33,9 +33,10 @@ const TERMINAL_THEME = {
 
 export default class XRTTty {
   terminalElement: HTMLElement;
-  term: any;
+  term: Terminal;
+  aframeaddon: AframeAddon;
 
-  constructor(component: AFRAME.AComponent) {
+  constructor(component: typeof AFRAME.AComponent) {
     console.log('new tty');
     this.terminalElement = document.createElement('div');
     this.terminalElement.setAttribute('style',
@@ -51,6 +52,7 @@ export default class XRTTty {
       if (!data) {
         return theme;
       }
+      // @ts-ignore
       theme[key.slice('theme_'.length)] = data;
       return theme;
     }, {});
@@ -77,7 +79,6 @@ export default class XRTTty {
     this.term.write(message);
 
     const protocol = (location.protocol == "https:") ? "wss" : "ws";
-    // const url = `${protocol}://${location.hostname}:${WS_PORT}`;
     const url = `${protocol}://${location.hostname}`;
 
     const socket = new WebSocket(`${url}:${CM.COMM_PORT}/`);
@@ -89,7 +90,8 @@ export default class XRTTty {
     socket.onclose = () => {
       this.term.write('\r\nConnection closed.\r\n');
     };
-    this.term.onData((/** @type {string} */ data) => {
+    this.term.onData((data: string) => {
+      console.log(`onData: ${data}`)
       socket.send(data);
     });
   }

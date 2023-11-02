@@ -6,12 +6,14 @@ const UNFOCUSED_OPACITY = 0.4;
 const THREE = AFRAME.THREE;
 
 export default class XRTTermBare {
-  /**
-   * @param {AFRAME.AComponent} component
-   */
-  constructor(component) {
+  bg_geometry_: THREE.PlaneGeometry;
+  bg_material_: THREE.MeshBasicMaterial;
+  canvas_texture: THREE.CanvasTexture;
+  el_term_: typeof AFRAME.AEntity;
+
+  constructor(component: typeof AFRAME.AComponent) {
     // @ts-ignore
-    const tty = /** @type {XRTTty} */ (component.el.components['xrtty'].impl);
+    const tty = (component.el.components['xrtty'].impl) as XRTTty;
     const aframeaddon = tty.aframeaddon;
     console.log(aframeaddon.canvasSize);
 
@@ -26,24 +28,25 @@ export default class XRTTermBare {
     const mesh = new THREE.Mesh(this.bg_geometry_, this.bg_material_)
 
     component.el.setObject3D('mesh', mesh);
-    component.el.addEventListener('raycaster-intersected', (obj_) => {
+    // @ts-ignore
+    component.el.addEventListener('raycaster-intersected', (_) => {
       this.focused();
     });
-    component.el.addEventListener('raycaster-intersected-cleared', (obj_) => {
+    // @ts-ignore
+    component.el.addEventListener('raycaster-intersected-cleared', (_) => {
       this.unfocused();
     });
 
     this.canvas_texture = new THREE.CanvasTexture(
       aframeaddon.textureAtlas);
     this.canvas_texture.needsUpdate = true;
-    this.fg_color_ = component.data.color;
 
     let glyph_geometry = aframeaddon.bufferGeometry;
     var term_mesh = new THREE.Mesh(
       glyph_geometry,
       new THREE.MeshBasicMaterial({
         map: this.canvas_texture,
-        color: this.fg_color_, transparent: true
+        color: component.data.color, transparent: true
       }));
     this.el_term_ = document.createElement('a-entity');
     this.el_term_.setObject3D('mesh', term_mesh);
@@ -82,6 +85,7 @@ AFRAME.registerComponent('term-bare', {
   * @this {AFRAME.AComponent & {impl: XRTTermBare}}
   */
   init: function() {
+    // @ts-ignore
     this.impl = new XRTTermBare(this);
   },
 });
