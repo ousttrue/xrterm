@@ -18,9 +18,9 @@ const ARRAY_SIZE = 24000;
 export class AframeGlyphRenderer {
   private _atlas: WebglCharAtlas | undefined;
 
-  private positions: Float32Array;
-  private uvs: Float32Array;
-  private idx: Uint32Array;
+  public positions: Float32Array;
+  public uvs: Float32Array;
+  public idx: Uint32Array;
 
   constructor(
     private _terminal: Terminal,

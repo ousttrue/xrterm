@@ -31,6 +31,7 @@ export class AframeRenderer extends Disposable implements IRenderer {
   private _gl: IWebGL2RenderingContext;
   private _rectangleRenderer: RectangleRenderer;
   private _glyphRenderer: AframeGlyphRenderer;
+  public get GlyphRenderer() { return this._glyphRenderer; }
 
   public dimensions: IRenderDimensions;
 
