@@ -1,8 +1,9 @@
 // @ts-check
+/// <reference path="../../demo/lib/local-echo.min.js">
+/// <reference path="../../demo/lib/bash-emulator.min.js">
 import TermObject from './TermObject.mjs'
 import CM from '../Common.mjs'
-import * as LocalEchoController from '../../demo/lib/local-echo.min.js'
-import * as bashEmulator from '../../demo/lib/bash-emulator.min.js'
+import XRTTty from './XRTTty.mjs'
 
 function init_bash_emulator_() {
   const emulator = bashEmulator({
@@ -52,22 +53,21 @@ export default class XRTTermDemo {
     });
 
     // bash
-    // const bash = init_bash_emulator_();
+    const bash = init_bash_emulator_();
 
     tty.term.onData((data: string) => {
       this.interaction_(tty, data);
     });
 
-    // const localEcho = new LocalEchoController();
-    // tty.term.loadAddon(localEcho);
-    // localEcho.addAutocompleteHandler((index, tokens) => {
-    //   if (index == 0) { return Object.keys(bash.commands); }
-    //   return [];
-    // });
+    const localEcho = new LocalEchoController();
+    tty.term.loadAddon(localEcho);
+    localEcho.addAutocompleteHandler((index, tokens) => {
+      if (index == 0) { return Object.keys(bash.commands); }
+      return [];
+    });
 
-    tty.command = '';
     tty.term.write(CM.DEMO_BANNER);
-    // this.repl_(localEcho, bash, tty);
+    this.repl_(localEcho, bash, tty);
   }
 
   repl_(echo: LocalEchoController, bash: any, tty: XRTTty) {
@@ -142,8 +142,9 @@ AFRAME.registerComponent('term-demo', {
     depth: { default: 0.05 },
     color: { default: '#ffffff' },
     background: { default: '#000000' }
-   },
+  },
   init: function() {
+    // @ts-ignore
     this.impl = new XRTTermDemo(this);
   },
 });
