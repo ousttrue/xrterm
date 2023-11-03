@@ -10,14 +10,22 @@
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script type="module" src="./src/client/XRTTty.mts"></script>
     <script type="module" src="./src/client/XRTTermBare.mts"></script>
+    <script type="module" src="./src/client/XRTTermDemo.mts"></script>
     <script type="module" src="index.mts"></script>
     <script id="scene" type="text/html">
       <a-scene>
         <a-camera wasd-controls-enabled="false"></a-camera>
+
         <a-entity
           position="0 1.5 -1"
           xrtty="cols: 80, rows: 24"
           term-bare="width: 1, height: 0.6"
+        ></a-entity>
+
+        <a-entity
+          position="-1.1 1.5 -1"
+          xrtty="cols: 80, rows: 24"
+          term-demo="color: #11ffff"
         ></a-entity>
       </a-scene>
     </script>

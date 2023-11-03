@@ -76,23 +76,6 @@ export default class XRTTty {
 
     const message = 'Initialized\r\n';
     this.term.write(message);
-
-    const protocol = (location.protocol == "https:") ? "wss" : "ws";
-    const url = `${protocol}://${location.hostname}`;
-
-    const socket = new WebSocket(`${url}:${CM.COMM_PORT}/`);
-    // Listen on data, write it to the terminal
-    socket.onmessage = ({ data }) => {
-      // console.log(data);
-      this.term.write(data);
-    };
-    socket.onclose = () => {
-      this.term.write('\r\nConnection closed.\r\n');
-    };
-    this.term.onData((data: string) => {
-      // console.log(`onData: ${data}`)
-      socket.send(data);
-    });
   }
 
   tick() {
