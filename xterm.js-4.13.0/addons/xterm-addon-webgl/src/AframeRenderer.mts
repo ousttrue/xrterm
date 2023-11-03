@@ -28,7 +28,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
   private _model: RenderModel = new RenderModel();
   private _workCell: CellData = new CellData();
 
-  private _canvas: any;
   private _gl: IWebGL2RenderingContext;
   private _rectangleRenderer: RectangleRenderer;
   private _glyphRenderer: AframeGlyphRenderer;
@@ -73,17 +72,22 @@ export class AframeRenderer extends Disposable implements IRenderer {
 
     console.log('canvas -----------------------------v');
     // canvas
-    this._canvas = document.createElement('canvas');
     this._gl = this._gl_three;
 
     if (!this._gl) { throw new Error('WebGL2 not supported ' + this._gl); }
 
-    this._core.screenElement!.appendChild(this._canvas);
     this._rectangleRenderer = new RectangleRenderer(this._terminal, this._colors, this._gl, this.dimensions);
     this._glyphRenderer = new AframeGlyphRenderer(this._terminal, this._colors, this._gl, this.dimensions);
     // Update dimensions and acquire char atlas
     this.onCharSizeChanged();
     this._isAttached = document.body.contains(this._core.screenElement!);
+  }
+
+  public get canvasSize(): { width: number, height: number } {
+    return {
+      width: this.dimensions.scaledCanvasWidth,
+      height: this.dimensions.scaledCanvasHeight,
+    };
   }
 
   public get bufferGeometry(): any {
@@ -100,7 +104,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
 
   public dispose(): void {
     this._renderLayers.forEach(l => l.dispose());
-    this._core.screenElement!.removeChild(this._canvas);
     super.dispose();
   }
 
@@ -147,12 +150,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
 
     // Resize all render layers
     this._renderLayers.forEach(l => l.resize(this._terminal, this.dimensions));
-
-    // Resize the canvas
-    this._canvas.width = this.dimensions.scaledCanvasWidth;
-    this._canvas.height = this.dimensions.scaledCanvasHeight;
-    this._canvas.style.width = `${this.dimensions.canvasWidth}px`;
-    this._canvas.style.height = `${this.dimensions.canvasHeight}px`;
 
     // Resize the screen
     this._core.screenElement!.style.width = `${this.dimensions.canvasWidth}px`;
@@ -220,8 +217,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
     this._charAtlas = atlas as WebglCharAtlas;
     this._charAtlas.warmUp();
     this._glyphRenderer.setAtlas(this._charAtlas);
-
-    console.log('canvas warmup--------------- USE CanvasTexture');
   }
 
   public clearCharAtlas(): void {
@@ -266,45 +261,9 @@ export class AframeRenderer extends Disposable implements IRenderer {
 
     // Update model to reflect what's drawn
     this._updateModel(start, end);
-
-    this._glyphRenderer.debug();
-
-    // Render
-    /*
-    this._rectangleRenderer.render();
-    this._glyphRenderer.render(this._model, this._model.selection.hasSelection);
-    */
   }
 
   public renderRows(start: number, end: number): void {
-    if (!this._isAttached) {
-      if (document.body.contains(this._core.screenElement!) && (this._core as any)._charSizeService.width && (this._core as any)._charSizeService.height) {
-        this._updateDimensions();
-        this._refreshCharAtlas();
-        this._isAttached = true;
-      } else {
-        return;
-      }
-    }
-
-    // Update render layers
-    this._renderLayers.forEach(l => l.onGridChanged(this._terminal, start, end));
-
-    // Tell renderer the frame is beginning
-    if (this._glyphRenderer.beginFrame()) {
-      this._model.clear();
-      this._model.clearSelection();
-    }
-
-    // Update model to reflect what's drawn
-    this._updateModel(start, end);
-
-    this._glyphRenderer.updateAtlas();
-    // Render
-    /*
-    this._rectangleRenderer.render();
-    this._glyphRenderer.render(this._model, this._model.selection.hasSelection);
-    */
   }
 
   private _updateModel(start: number, end: number): void {
@@ -344,8 +303,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
 
         this._glyphRenderer.updateCell(x, y, code, this._workCell.bg, this._workCell.fg, chars);
       }
-
-
     }
     this._rectangleRenderer.updateBackgrounds(this._model);
   }

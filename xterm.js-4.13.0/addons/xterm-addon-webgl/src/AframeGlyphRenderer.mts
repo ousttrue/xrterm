@@ -37,9 +37,7 @@ const ARRAY_SIZE = 24000;
 
 export class AframeGlyphRenderer {
   private _atlas: WebglCharAtlas | undefined;
-
   public _atlasTexture: WebGLTexture;
-  private _activeBuffer: number = 0;
 
   // from a-frame variables
   private _aframebuffergeometry: any;
@@ -62,15 +60,13 @@ export class AframeGlyphRenderer {
     selectionAttributes: new Float32Array(0)
   };
 
-  private vertices: any;
-  private numVertices: any;
-  private positionNumComponents: any;
-  private uvNumComponents: any;
-  private positions: any;
-  private uvs: any;
-  private idx: any;
-  private posNdx: any;
-  private uvNdx: any;
+  private positions: Float32Array;
+  private uvs: Float32Array;
+
+  private idx: Uint32Array;
+  public get termIndex(): any {
+    return this.idx;
+  }
 
   constructor(
     private _terminal: Terminal,
@@ -114,15 +110,15 @@ export class AframeGlyphRenderer {
     this.onResize();
   }
 
+  public debug(): void {
+    // console.log(this._vertices.pos_attributes);
+  }
+
   public updateCell(x: number, y: number, code: number, bg: number, fg: number, chars: string): void {
     this._updateCell(this.positions, this.uvs, this.idx, x, y, code, bg, fg, chars);
     this._aframebuffergeometry.attributes.position.needsUpdate = true;
     this._aframebuffergeometry.attributes.uv.needsUpdate = true;
     this._aframebuffergeometry.index.needsUpdate = true;
-  }
-
-  public debug(): void {
-    // console.log(this._vertices.pos_attributes);
   }
 
   private _updateCell(pos_array_: Float32Array, uv_array_: Float32Array, idx_array_: Uint32Array,
@@ -190,31 +186,6 @@ export class AframeGlyphRenderer {
       ], uv_idx);
   }
 
-  private get_pos(array_: Float32Array, offset_: number) {
-    return "(" + array_[offset_].toFixed(2) + ", " + array_[offset_ + 1].toFixed(2) + ", " + array_[offset_ + 2].toFixed(2) + ")";
-  }
-
-  public updateAtlas(): void {
-    /*
-       // Bind the texture atlas if it's changed
-       if (this._atlas.hasCanvasChanged) {
-         this._atlas.hasCanvasChanged = false;
-         // gl.uniform1i(this._textureLocation, 0);
-         gl.activeTexture(gl.TEXTURE0 + 0);
-         gl.bindTexture(gl.TEXTURE_2D, this._atlasTexture);
-         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._atlas.cacheCanvas);
-         gl.generateMipmap(gl.TEXTURE_2D);
-         }
-         */
-  }
-
-  private _getColorFromAnsiIndex(idx: number): IColor {
-    if (idx >= this._colors.ansi.length) {
-      throw new Error('No color found for idx ' + idx);
-    }
-    return this._colors.ansi[idx];
-  }
-
   public onResize(): void {
     const terminal = this._terminal;
 
@@ -246,50 +217,11 @@ export class AframeGlyphRenderer {
   }
 
   public render(renderModel: IRenderModel, isSelectionVisible: boolean): void {
-    /*
-        if (!this._atlas) { return; }
-    
-        const gl = this._gl;
-    
-        // Alternate buffers each frame as the active buffer gets locked while it's in use by the GPU
-        this._activeBuffer = (this._activeBuffer + 1) % 2;
-        const activeBuffer = this._vertices.attributesBuffers[this._activeBuffer];
-    
-        // Copy data for each cell of each line up to its line length (the last non-whitespace cell)
-        // from the attributes buffer into activeBuffer, which is the one that gets bound to the GPU.
-        // The reasons for this are as follows:
-        // - So the active buffer can be alternated so we don't get blocked on rendering finishing
-        // - To copy either the normal attributes buffer or the selection attributes buffer when there
-        //   is a selection
-        // - So we don't send vertices for all the line-ending whitespace to the GPU
-        let bufferLength = 0;
-        for (let y = 0; y < renderModel.lineLengths.length; y++)
-        {
-          const si = y * this._terminal.cols * INDICES_PER_CELL;
-          const sub = (isSelectionVisible ? this._vertices.selectionAttributes : this._vertices.attributes).subarray(si, si + renderModel.lineLengths[y] * INDICES_PER_CELL);
-          activeBuffer.set(sub, bufferLength);
-          bufferLength += sub.length;
-        }
-    
-        // Bind the texture atlas if it's changed
-        if (this._atlas.hasCanvasChanged) {
-          this._atlas.hasCanvasChanged = false;
-          // gl.uniform1i(this._textureLocation, 0);
-          gl.activeTexture(gl.TEXTURE0 + 0);
-          gl.bindTexture(gl.TEXTURE_2D, this._atlasTexture);
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._atlas.cacheCanvas);
-          gl.generateMipmap(gl.TEXTURE_2D);
-        }
-    
-        // Draw the viewport
-        gl.drawElementsInstanced(gl.TRIANGLES, 6, gl.UNSIGNED_BYTE, 0, bufferLength / INDICES_PER_CELL);
-    */
   }
 
   public setAtlas(atlas: WebglCharAtlas): void {
     const gl = this._gl;
     this._atlas = atlas;
-
     gl.bindTexture(gl.TEXTURE_2D, this._atlasTexture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlas.cacheCanvas);
     gl.generateMipmap(gl.TEXTURE_2D);
@@ -307,10 +239,6 @@ export class AframeGlyphRenderer {
     return this._aframeshadermaterial;
   }
 
-  public get termIndex(): any {
-    return this.idx;
-  }
-
   public beginFrame(): boolean {
     return this._atlas ? this._atlas.beginFrame() : true;
   }
@@ -319,83 +247,5 @@ export class AframeGlyphRenderer {
   }
 
   public updateSelection(model: IRenderModel): void {
-    const terminal = this._terminal;
-
-    this._vertices.selectionAttributes = slice(this._vertices.attributes, 0);
-
-    const bg = (this._colors.selectionOpaque.rgba >>> 8) | Attributes.CM_RGB;
-
-    if (model.selection.columnSelectMode) {
-      const startCol = model.selection.startCol;
-      const width = model.selection.endCol - startCol;
-      const height = model.selection.viewportCappedEndRow - model.selection.viewportCappedStartRow + 1;
-      for (let y = model.selection.viewportCappedStartRow; y < model.selection.viewportCappedStartRow + height; y++) {
-        this._updateSelectionRange(startCol, startCol + width, y, model, bg);
-      }
-    } else {
-      // Draw first row
-      const startCol = model.selection.viewportStartRow === model.selection.viewportCappedStartRow ? model.selection.startCol : 0;
-      const startRowEndCol = model.selection.viewportCappedStartRow === model.selection.viewportCappedEndRow ? model.selection.endCol : terminal.cols;
-      this._updateSelectionRange(startCol, startRowEndCol, model.selection.viewportCappedStartRow, model, bg);
-
-      // Draw middle rows
-      const middleRowsCount = Math.max(model.selection.viewportCappedEndRow - model.selection.viewportCappedStartRow - 1, 0);
-      for (let y = model.selection.viewportCappedStartRow + 1; y <= model.selection.viewportCappedStartRow + middleRowsCount; y++) {
-        this._updateSelectionRange(0, startRowEndCol, y, model, bg);
-      }
-
-      // Draw final row
-      if (model.selection.viewportCappedStartRow !== model.selection.viewportCappedEndRow) {
-        // Only draw viewportEndRow if it's not the same as viewportStartRow
-        const endCol = model.selection.viewportEndRow === model.selection.viewportCappedEndRow ? model.selection.endCol : terminal.cols;
-        this._updateSelectionRange(0, endCol, model.selection.viewportCappedEndRow, model, bg);
-      }
-    }
   }
-
-  private _updateSelectionRange(startCol: number, endCol: number, y: number, model: IRenderModel, bg: number): void {
-    const terminal = this._terminal;
-    const row = y + terminal.buffer.active.viewportY;
-    let line: IBufferLine | undefined;
-    for (let x = startCol; x < endCol; x++) {
-      const offset = (y * this._terminal.cols + x) * RENDER_MODEL_INDICIES_PER_CELL;
-      const code = model.cells[offset];
-      let fg = model.cells[offset + RENDER_MODEL_FG_OFFSET];
-      if (fg & FgFlags.INVERSE) {
-        const workCell = new AttributeData();
-        workCell.fg = fg;
-        workCell.bg = model.cells[offset + RENDER_MODEL_BG_OFFSET];
-        // Get attributes from fg (excluding inverse) and resolve inverse by pullibng rgb colors
-        // from bg. This is needed since the inverse fg color should be based on the original bg
-        // color, not on the selection color
-        fg = (fg & ~(Attributes.CM_MASK | Attributes.RGB_MASK | FgFlags.INVERSE));
-        switch (workCell.getBgColorMode()) {
-          case Attributes.CM_P16:
-          case Attributes.CM_P256:
-            const c = this._getColorFromAnsiIndex(workCell.getBgColor()).rgba;
-            fg |= (c >> 8) & Attributes.RED_MASK | (c >> 8) & Attributes.GREEN_MASK | (c >> 8) & Attributes.BLUE_MASK;
-          case Attributes.CM_RGB:
-            const arr = AttributeData.toColorRGB(workCell.getBgColor());
-            fg |= arr[0] << Attributes.RED_SHIFT | arr[1] << Attributes.GREEN_SHIFT | arr[2] << Attributes.BLUE_SHIFT;
-          case Attributes.CM_DEFAULT:
-          default:
-            const c2 = this._colors.background.rgba;
-            fg |= (c2 >> 8) & Attributes.RED_MASK | (c2 >> 8) & Attributes.GREEN_MASK | (c2 >> 8) & Attributes.BLUE_MASK;
-        }
-        fg |= Attributes.CM_RGB;
-      }
-      if (code & COMBINED_CHAR_BIT_MASK) {
-        if (!line) {
-          line = terminal.buffer.active.getLine(row);
-        }
-        const chars = line!.getCell(x)!.getChars();
-        // Aframe
-        //        this._updateCell(this._vertices.selectionAttributes, x, y, model.cells[offset], bg, fg, chars);
-      } else {
-        // Aframe
-        //        this._updateCell(this._vertices.selectionAttributes, x, y, model.cells[offset], bg, fg);
-      }
-    }
-  }
-
 }

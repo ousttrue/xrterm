@@ -66,7 +66,7 @@ export default class XRTTty {
       cols: component.data.cols,
       fontSize: 12
     });
-    console.log(this.term);
+    // console.log(this.term);
 
     this.term.open(this.terminalElement);
 
@@ -84,21 +84,21 @@ export default class XRTTty {
     const socket = new WebSocket(`${url}:${CM.COMM_PORT}/`);
     // Listen on data, write it to the terminal
     socket.onmessage = ({ data }) => {
-      console.log(data);
+      // console.log(data);
       this.term.write(data);
     };
     socket.onclose = () => {
       this.term.write('\r\nConnection closed.\r\n');
     };
     this.term.onData((data: string) => {
-      console.log(`onData: ${data}`)
+      // console.log(`onData: ${data}`)
       socket.send(data);
     });
   }
 
   tick() {
     this.term.focus();
-    this.aframeaddon.tick();
+    this.aframeaddon.Renderer!.updateRows(0, 24);
   }
 }
 
@@ -114,18 +114,18 @@ AFRAME.registerComponent('xrtty', {
       default: 25
     },
   }, TERMINAL_THEME),
-  /**
-  * @this {AFRAME.AComponent & {impl: XRTTty}}
-  */
   init: function() {
+    // @ts-ignore
     this.impl = new XRTTty(this);
 
     // event listener
     this.el.addEventListener('click', () => {
+      // @ts-ignore
       this.impl.term.focus();
       console.log('focused on ', this);
     });
     this.el.addEventListener('raycaster-intersected', () => {
+      // @ts-ignore
       this.impl.term.focus();
       console.log('intersected');
     });
@@ -133,10 +133,8 @@ AFRAME.registerComponent('xrtty', {
       console.log('cleared');
     });
   },
-  /**
-  * @this {AFRAME.AComponent & {impl: XRTTty}}
-  */
   tick: function() {
+    // @ts-ignore
     this.impl.tick();
   }
 });
