@@ -1,16 +1,14 @@
 /// @ts-check
 import XRTTty from './XRTTty.mjs';
-import { AframeRenderer } from '../../xterm.js-4.13.0/addons/xterm-addon-webgl/src/AframeRenderer.mjs';
-const DEFAULT_BG_COLOR = 0x333333;
-const FOCUSED_OPACITY = 0.8;
-const UNFOCUSED_OPACITY = 0.4;
+import { AframeRenderer } from '../../xterm.js-4.13.0/addons/xterm-addon-webgl/src/AframeRenderer.mjs'
 const THREE = AFRAME.THREE;
 
 type Scheme = {
   width: number,
   height: number,
   depth: number,
-  color: string
+  color: string,
+  background: string,
 }
 
 class TermObject {
@@ -27,10 +25,8 @@ class TermObject {
     // create BG material and mesh
     const geometry = new THREE.BoxGeometry(data.width, data.height, data.depth);
     this.bg_material = new THREE.MeshBasicMaterial({
-      color: DEFAULT_BG_COLOR,
+      color: data.background,
       side: THREE.FrontSide,
-      opacity: 1,
-      transparent: true
     });
     this.bg_mesh = new THREE.Mesh(geometry, this.bg_material)
 
@@ -46,7 +42,6 @@ class TermObject {
     this._aframebuffergeometry.setAttribute('uv', aframe_uv_att);
     this._aframebuffergeometry.attributes.uv.needsUpdate = true;
     this._aframebuffergeometry.setIndex(new AFRAME.THREE.BufferAttribute(glyph.idx, 1));
-    this._aframebuffergeometry.index!.needsUpdate = true;
 
     this.glyph_texture = new THREE.CanvasTexture(renderer.textureAtlas!);
     this.glyph_texture.needsUpdate = true;
@@ -82,21 +77,11 @@ export default class XRTTermBare {
     const aframeaddon = tty.aframeaddon;
 
     this.termObject = new TermObject(aframeaddon.Renderer, component.data);
-
     component.el.setObject3D('mesh', this.termObject.bg_mesh);
-
-    // @ts-ignore
-    component.el.addEventListener('raycaster-intersected', (_) => {
-      this.termObject.bg_material.opacity = FOCUSED_OPACITY;
-    });
-    // @ts-ignore
-    component.el.addEventListener('raycaster-intersected-cleared', (_) => {
-      this.termObject.bg_material.opacity = UNFOCUSED_OPACITY;
-    });
-
     component.el.appendChild(this.termObject.glyph_el);
 
     tty.term.onRender(() => {
+      // TODO: when atlas updated
       this.termObject.glyph_texture.needsUpdate = true;
     });
   }
@@ -104,7 +89,6 @@ export default class XRTTermBare {
   tick() {
     this.termObject._aframebuffergeometry.attributes.position.needsUpdate = true;
     this.termObject._aframebuffergeometry.attributes.uv.needsUpdate = true;
-    this.termObject._aframebuffergeometry.index!.needsUpdate = true;
   }
 }
 
@@ -117,7 +101,8 @@ AFRAME.registerComponent('term-bare', {
     depth: { default: 0.05 },
     cols: { default: 80 },
     rows: { default: 24 },
-    color: { default: '#ffffff' }
+    color: { default: '#ffffff' },
+    background: { default: '#000000' }
   },
 
   /**

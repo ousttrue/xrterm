@@ -24,6 +24,15 @@ export class AframeGlyphRenderer {
     this.positions = new Float32Array(ARRAY_SIZE);
     this.uvs = new Float32Array(ARRAY_SIZE);
     this.idx = new Uint32Array(ARRAY_SIZE);
+    let v = 0;
+    for (let i = 0; i < ARRAY_SIZE; i += 6, v += 4) {
+      this.idx[i] = v + 2;
+      this.idx[i + 1] = v + 1;
+      this.idx[i + 2] = v;
+      this.idx[i + 3] = v + 2;
+      this.idx[i + 4] = v + 3;
+      this.idx[i + 5] = v + 1;
+    }
   }
 
   public updateCell(terminal: Terminal, dimensions: IRenderDimensions,
@@ -84,13 +93,6 @@ export class AframeGlyphRenderer {
         uv_left, uv_bottom,
         uv_right, uv_bottom,
       ], uv_idx);
-
-    const idx_o = (y * terminal.cols + x) * 4;
-    this.idx.set(
-      [
-        idx_o + 2, idx_o + 1, idx_o,
-        idx_o + 2, idx_o + 3, idx_o + 1],
-      (y * terminal.cols + x) * 6);
   }
 
   public setAtlas(atlas: WebglCharAtlas): void {
