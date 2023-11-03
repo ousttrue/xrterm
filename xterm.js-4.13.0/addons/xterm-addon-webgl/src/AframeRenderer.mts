@@ -29,7 +29,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
   private _workCell: CellData = new CellData();
 
   private _gl: IWebGL2RenderingContext;
-  private _rectangleRenderer: RectangleRenderer;
   private _glyphRenderer: AframeGlyphRenderer;
   public get GlyphRenderer() { return this._glyphRenderer; }
 
@@ -44,7 +43,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
   constructor(
     private _terminal: Terminal,
     private _colors: IColorSet,
-    private _gl_three: IWebGL2RenderingContext,
   ) {
     super();
 
@@ -72,27 +70,11 @@ export class AframeRenderer extends Disposable implements IRenderer {
     this._updateDimensions();
 
     console.log('canvas -----------------------------v');
-    // canvas
-    this._gl = this._gl_three;
 
-    if (!this._gl) { throw new Error('WebGL2 not supported ' + this._gl); }
-
-    this._rectangleRenderer = new RectangleRenderer(this._terminal, this._colors, this._gl, this.dimensions);
-    this._glyphRenderer = new AframeGlyphRenderer(this._terminal, this._colors, this._gl);
+    this._glyphRenderer = new AframeGlyphRenderer();
     // Update dimensions and acquire char atlas
     this.onCharSizeChanged();
     this._isAttached = document.body.contains(this._core.screenElement!);
-  }
-
-  public get canvasSize(): { width: number, height: number } {
-    return {
-      width: this.dimensions.scaledCanvasWidth,
-      height: this.dimensions.scaledCanvasHeight,
-    };
-  }
-
-  public get textureObject(): WebGLTexture | undefined {
-    return this._glyphRenderer._atlasTexture;
   }
 
   public dispose(): void {
@@ -112,12 +94,10 @@ export class AframeRenderer extends Disposable implements IRenderer {
       l.reset(this._terminal);
     });
 
-    this._rectangleRenderer.setColors();
     this._glyphRenderer.setColors();
 
     this._refreshCharAtlas();
 
-    this._rectangleRenderer.updateSelection(this._model.selection);
     this._glyphRenderer.updateSelection(this._model);
 
     // Force a full refresh
@@ -139,7 +119,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
     this._updateDimensions();
 
     this._model.resize(this._terminal.cols, this._terminal.rows);
-    this._rectangleRenderer.onResize();
 
     // Resize all render layers
     this._renderLayers.forEach(l => l.resize(this._terminal, this.dimensions));
@@ -172,7 +151,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
 
     this._updateSelectionModel(start, end, columnSelectMode);
 
-    this._rectangleRenderer.updateSelection(this._model.selection);
     this._glyphRenderer.updateSelection(this._model);
 
     this._onRequestRedraw.fire({ start: 0, end: this._terminal.rows - 1 });
@@ -254,9 +232,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
     this._updateModel(start, end);
   }
 
-  public renderRows(start: number, end: number): void {
-  }
-
   private _updateModel(start: number, end: number): void {
     const terminal = this._core;
 
@@ -292,11 +267,10 @@ export class AframeRenderer extends Disposable implements IRenderer {
         this._model.cells[i + RENDER_MODEL_BG_OFFSET] = this._workCell.bg;
         this._model.cells[i + RENDER_MODEL_FG_OFFSET] = this._workCell.fg;
 
-        this._glyphRenderer.updateCell(this.dimensions,
+        this._glyphRenderer.updateCell(this._terminal, this.dimensions,
           x, y, code, this._workCell.bg, this._workCell.fg, chars);
       }
     }
-    this._rectangleRenderer.updateBackgrounds(this._model);
   }
 
   private _updateSelectionModel(start: [number, number] | undefined, end: [number, number] | undefined, columnSelectMode: boolean): void {

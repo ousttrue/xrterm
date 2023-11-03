@@ -16,8 +16,11 @@ class TermObject {
   glyph_texture: THREE.CanvasTexture;
 
   constructor(renderer: AframeRenderer, color: any) {
+    console.log(renderer.dimensions);
+    const width = renderer.dimensions.scaledCanvasWidth;
+    const height = renderer.dimensions.scaledCanvasHeight;
+
     // create BG material and mesh
-    const { width, height } = renderer.canvasSize;
     const geometry = new THREE.PlaneGeometry(
       width * 0.044,
       height * 0.044, 8, 8);
@@ -29,9 +32,8 @@ class TermObject {
     });
     this.bg_mesh = new THREE.Mesh(geometry, this.bg_material)
 
-    const glyph = renderer.GlyphRenderer;
-
     // create FG material and mesh
+    const glyph = renderer.GlyphRenderer;
     const aframe_pos_att = new AFRAME.THREE.BufferAttribute(glyph.positions, 3);
     aframe_pos_att.usage = AFRAME.THREE.DynamicDrawUsage;
     const aframe_uv_att = new AFRAME.THREE.BufferAttribute(glyph.uvs, 2);
@@ -65,10 +67,8 @@ export default class XRTTermBare {
     // @ts-ignore
     const tty = (component.el.components['xrtty'].impl) as XRTTty;
     const aframeaddon = tty.aframeaddon;
-    const { width, height } = aframeaddon.Renderer!.canvasSize;
-    console.log(width, height);
 
-    this.termObject = new TermObject(aframeaddon.Renderer!, component.data.color);
+    this.termObject = new TermObject(aframeaddon.Renderer, component.data.color);
 
     component.el.setObject3D('mesh', this.termObject.bg_mesh);
 
@@ -81,6 +81,8 @@ export default class XRTTermBare {
       this.termObject.bg_material.opacity = UNFOCUSED_OPACITY;
     });
 
+    const width = aframeaddon.Renderer.dimensions.scaledCanvasWidth;
+    const height = aframeaddon.Renderer.dimensions.scaledCanvasHeight;
     const el_term_ = document.createElement('a-entity');
     el_term_.setObject3D('mesh', this.termObject.glyph_mesh);
     el_term_.object3D.position.set(

@@ -9,9 +9,9 @@ import { AframeRenderer } from './AframeRenderer.mjs';
 
 export class AframeAddon implements ITerminalAddon {
   private _renderer?: AframeRenderer;
-  public get Renderer() { return this._renderer; }
+  public get Renderer() { return this._renderer!; }
 
-  constructor(private _gl_three: any) {
+  constructor() {
   }
 
   public activate(terminal: Terminal): void {
@@ -20,10 +20,13 @@ export class AframeAddon implements ITerminalAddon {
     }
 
     const colors: IColorSet = (terminal as any)._core._colorManager.colors;
-    this._renderer = new AframeRenderer(terminal, colors, this._gl_three);
+    this._renderer = new AframeRenderer(terminal, colors);
   }
 
   public dispose(): void {
+    if (this._renderer) {
+      this._renderer.dispose();
+    }
     this._renderer = undefined;
   }
 }

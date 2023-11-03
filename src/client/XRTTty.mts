@@ -66,13 +66,11 @@ export default class XRTTty {
       cols: component.data.cols,
       fontSize: 12
     });
-    // console.log(this.term);
 
     this.term.open(this.terminalElement);
 
     // @ts-ignore
-    const gl = document.querySelector('a-scene').renderer.getContext();
-    this.aframeaddon = new AframeAddon(gl);
+    this.aframeaddon = new AframeAddon();
     this.term.loadAddon(this.aframeaddon);
 
     const message = 'Initialized\r\n';
