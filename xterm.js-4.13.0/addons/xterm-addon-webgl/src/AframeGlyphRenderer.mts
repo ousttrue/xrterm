@@ -52,7 +52,6 @@ export class AframeGlyphRenderer {
 
     // Fill empty if no glyph was found
     if (!rasterizedGlyph) {
-      // fill(array, 0, i, i + INDICES_PER_CELL - 1 - CELL_POSITION_INDICES);
       fill(this.positions, 0, offset, offset + INDICES_PER_CELL - 1 - CELL_POSITION_INDICES);
       fill(this.uvs, 0, offset, offset + INDICES_PER_CELL - 1 - CELL_POSITION_INDICES);
       return;

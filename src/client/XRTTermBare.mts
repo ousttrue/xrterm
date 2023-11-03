@@ -6,24 +6,26 @@ const FOCUSED_OPACITY = 0.8;
 const UNFOCUSED_OPACITY = 0.4;
 const THREE = AFRAME.THREE;
 
+type Scheme = {
+  width: number,
+  height: number,
+  depth: number,
+  color: string
+}
+
 class TermObject {
   bg_material: THREE.Material;
   bg_mesh: THREE.Mesh;
 
   // from a-frame variables
   _aframebuffergeometry: THREE.BufferGeometry;
-  glyph_mesh: THREE.Mesh;
   glyph_texture: THREE.CanvasTexture;
+  glyph_el: typeof AFRAME.AEntity;
 
-  constructor(renderer: AframeRenderer, color: any) {
+  constructor(renderer: AframeRenderer, data: Scheme) {
     console.log(renderer.dimensions);
-    const width = renderer.dimensions.scaledCanvasWidth;
-    const height = renderer.dimensions.scaledCanvasHeight;
-
     // create BG material and mesh
-    const geometry = new THREE.PlaneGeometry(
-      width * 0.044,
-      height * 0.044, 8, 8);
+    const geometry = new THREE.BoxGeometry(data.width, data.height, data.depth);
     this.bg_material = new THREE.MeshBasicMaterial({
       color: DEFAULT_BG_COLOR,
       side: THREE.FrontSide,
@@ -40,9 +42,8 @@ class TermObject {
     aframe_uv_att.usage = AFRAME.THREE.DynamicDrawUsage;
     this._aframebuffergeometry = new AFRAME.THREE.BufferGeometry();
     this._aframebuffergeometry.setAttribute('position', aframe_pos_att);
-    this._aframebuffergeometry.setAttribute('uv', aframe_uv_att);
-    this._aframebuffergeometry.dynamic = true;
     this._aframebuffergeometry.attributes.position.needsUpdate = true;
+    this._aframebuffergeometry.setAttribute('uv', aframe_uv_att);
     this._aframebuffergeometry.attributes.uv.needsUpdate = true;
     this._aframebuffergeometry.setIndex(new AFRAME.THREE.BufferAttribute(glyph.idx, 1));
     this._aframebuffergeometry.index!.needsUpdate = true;
@@ -50,13 +51,25 @@ class TermObject {
     this.glyph_texture = new THREE.CanvasTexture(renderer.textureAtlas!);
     this.glyph_texture.needsUpdate = true;
 
-    this.glyph_mesh = new THREE.Mesh(
+    const glyph_mesh = new THREE.Mesh(
       this._aframebuffergeometry,
       new THREE.MeshBasicMaterial({
         map: this.glyph_texture,
-        color,
+        color: data.color,
         transparent: true
       }));
+    this.glyph_el = document.createElement('a-entity');
+    this.glyph_el.setObject3D('mesh', glyph_mesh);
+    const factor = 1 / renderer._terminal.rows;;
+    this.glyph_el.object3D.scale.set(
+      factor,
+      factor,
+      factor,
+    );
+    this.glyph_el.object3D.position.set(
+      -data.width * 0.5 + data.width * 0.5 / renderer._terminal.cols,
+      data.height * 0.5,
+      data.depth * 0.5 + 0.005);
   }
 }
 
@@ -68,7 +81,7 @@ export default class XRTTermBare {
     const tty = (component.el.components['xrtty'].impl) as XRTTty;
     const aframeaddon = tty.aframeaddon;
 
-    this.termObject = new TermObject(aframeaddon.Renderer, component.data.color);
+    this.termObject = new TermObject(aframeaddon.Renderer, component.data);
 
     component.el.setObject3D('mesh', this.termObject.bg_mesh);
 
@@ -81,15 +94,7 @@ export default class XRTTermBare {
       this.termObject.bg_material.opacity = UNFOCUSED_OPACITY;
     });
 
-    const width = aframeaddon.Renderer.dimensions.scaledCanvasWidth;
-    const height = aframeaddon.Renderer.dimensions.scaledCanvasHeight;
-    const el_term_ = document.createElement('a-entity');
-    el_term_.setObject3D('mesh', this.termObject.glyph_mesh);
-    el_term_.object3D.position.set(
-      -width * 0.022,
-      height * 0.022,
-      0.1);
-    component.el.appendChild(el_term_);
+    component.el.appendChild(this.termObject.glyph_el);
 
     tty.term.onRender(() => {
       this.termObject.glyph_texture.needsUpdate = true;
@@ -107,6 +112,11 @@ console.log('AFRAME.registerComponent', 'term-bare');
 AFRAME.registerComponent('term-bare', {
   dependencies: ['xrtty'],
   schema: {
+    width: { default: 1 },
+    height: { default: 0.6 },
+    depth: { default: 0.05 },
+    cols: { default: 80 },
+    rows: { default: 24 },
     color: { default: '#ffffff' }
   },
 

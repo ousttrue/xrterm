@@ -14,15 +14,11 @@
     <script id="scene" type="text/html">
       <a-scene>
         <a-camera wasd-controls-enabled="false"></a-camera>
-        <a-entity workspace raycaster="objects: .collidable">
-          <a-plane
-            term-bare
-            xrtty
-            rotation="0 0 0"
-            position="0 5 -10"
-            scale="0.5 0.5 0.5"
-          ></a-plane>
-        </a-entity>
+        <a-entity
+          position="0 1.5 -1"
+          xrtty="cols: 80, rows: 24"
+          term-bare="width: 1, height: 0.6"
+        ></a-entity>
       </a-scene>
     </script>
   </head>

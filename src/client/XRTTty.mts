@@ -66,6 +66,7 @@ export default class XRTTty {
       cols: component.data.cols,
       fontSize: 12
     });
+    console.log(component.data);
 
     this.term.open(this.terminalElement);
 
@@ -95,7 +96,7 @@ export default class XRTTty {
   }
 
   tick() {
-    this.aframeaddon.Renderer!.updateRows(0, 24);
+    this.aframeaddon.Renderer!.updateRows();
     this.term.focus();
   }
 }
@@ -109,7 +110,7 @@ AFRAME.registerComponent('xrtty', {
     },
     rows: {
       type: 'number',
-      default: 25
+      default: 24
     },
   }, TERMINAL_THEME),
   init: function() {

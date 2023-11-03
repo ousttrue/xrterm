@@ -69,8 +69,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
     this._devicePixelRatio = window.devicePixelRatio;
     this._updateDimensions();
 
-    console.log('canvas -----------------------------v');
-
     this._glyphRenderer = new AframeGlyphRenderer();
     // Update dimensions and acquire char atlas
     this.onCharSizeChanged();
@@ -208,7 +206,9 @@ export class AframeRenderer extends Disposable implements IRenderer {
     return false;
   }
 
-  public updateRows(start: number, end: number): void {
+  public updateRows(_start?: number, _end?: number): void {
+    const start = _start ?? 0;
+    const end = _end ?? this._core.rows - 1;
     if (!this._isAttached) {
       if (document.body.contains(this._core.screenElement!) && (this._core as any)._charSizeService.width && (this._core as any)._charSizeService.height) {
         this._updateDimensions();
