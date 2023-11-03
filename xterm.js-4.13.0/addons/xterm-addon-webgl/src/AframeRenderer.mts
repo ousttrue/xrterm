@@ -77,7 +77,7 @@ export class AframeRenderer extends Disposable implements IRenderer {
     if (!this._gl) { throw new Error('WebGL2 not supported ' + this._gl); }
 
     this._rectangleRenderer = new RectangleRenderer(this._terminal, this._colors, this._gl, this.dimensions);
-    this._glyphRenderer = new AframeGlyphRenderer(this._terminal, this._colors, this._gl, this.dimensions);
+    this._glyphRenderer = new AframeGlyphRenderer(this._terminal, this._colors, this._gl);
     // Update dimensions and acquire char atlas
     this.onCharSizeChanged();
     this._isAttached = document.body.contains(this._core.screenElement!);
@@ -129,11 +129,11 @@ export class AframeRenderer extends Disposable implements IRenderer {
     // and the terminal needs to refreshed
     if (this._devicePixelRatio !== window.devicePixelRatio) {
       this._devicePixelRatio = window.devicePixelRatio;
-      this.onResize(this._terminal.cols, this._terminal.rows);
+      this.onResize();
     }
   }
 
-  public onResize(cols: number, rows: number): void {
+  public onResize(): void {
     // Update character and canvas dimensions
     this._updateDimensions();
 
@@ -146,8 +146,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
     // Resize the screen
     this._core.screenElement!.style.width = `${this.dimensions.canvasWidth}px`;
     this._core.screenElement!.style.height = `${this.dimensions.canvasHeight}px`;
-    this._glyphRenderer.setDimensions(this.dimensions);
-    this._glyphRenderer.onResize();
 
     this._refreshCharAtlas();
 
@@ -157,7 +155,7 @@ export class AframeRenderer extends Disposable implements IRenderer {
   }
 
   public onCharSizeChanged(): void {
-    this.onResize(this._terminal.cols, this._terminal.rows);
+    this.onResize();
   }
 
   public onBlur(): void {
@@ -293,7 +291,8 @@ export class AframeRenderer extends Disposable implements IRenderer {
         this._model.cells[i + RENDER_MODEL_BG_OFFSET] = this._workCell.bg;
         this._model.cells[i + RENDER_MODEL_FG_OFFSET] = this._workCell.fg;
 
-        this._glyphRenderer.updateCell(x, y, code, this._workCell.bg, this._workCell.fg, chars);
+        this._glyphRenderer.updateCell(this.dimensions,
+          x, y, code, this._workCell.bg, this._workCell.fg, chars);
       }
     }
     this._rectangleRenderer.updateBackgrounds(this._model);

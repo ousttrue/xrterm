@@ -3,15 +3,12 @@
  * @license MIT
  */
 
-import { throwIfFalsy } from './WebglUtils.mjs';
 import { WebglCharAtlas } from './atlas/WebglCharAtlas.mjs';
-import { IWebGL2RenderingContext, IWebGLVertexArrayObject, IRenderModel, IRasterizedGlyph } from './Types.mjs';
-import { COMBINED_CHAR_BIT_MASK, RENDER_MODEL_INDICIES_PER_CELL, RENDER_MODEL_FG_OFFSET, RENDER_MODEL_BG_OFFSET } from './RenderModel.mjs';
+import { IWebGL2RenderingContext, IRenderModel, IRasterizedGlyph } from './Types.mjs';
 import { fill } from 'common/TypedArrayUtils.mjs';
-import { slice } from './TypedArray.mjs';
-import { NULL_CELL_CODE, WHITESPACE_CELL_CODE, Attributes, FgFlags } from 'common/buffer/Constants.mjs';
-import { Terminal, IBufferLine } from 'xterm';
-import { IColorSet, IColor } from 'browser/Types.mjs';
+import { NULL_CELL_CODE, WHITESPACE_CELL_CODE } from 'common/buffer/Constants.mjs';
+import { Terminal } from 'xterm';
+import { IColorSet } from 'browser/Types.mjs';
 import { IRenderDimensions } from 'browser/renderer/Types.mjs';
 
 const INDICES_PER_CELL = 12;
@@ -20,7 +17,6 @@ const ARRAY_SIZE = 24000;
 
 export class AframeGlyphRenderer {
   private _atlas: WebglCharAtlas | undefined;
-  public _atlasTexture: WebGLTexture;
 
   private positions: Float32Array;
   private uvs: Float32Array;
@@ -29,36 +25,25 @@ export class AframeGlyphRenderer {
   constructor(
     private _terminal: Terminal,
     private _colors: IColorSet,
-    private _gl: IWebGL2RenderingContext,
-    private _dimensions: IRenderDimensions) {
-    const gl = this._gl;
-
+    private _gl: IWebGL2RenderingContext
+  ) {
     this.positions = new Float32Array(ARRAY_SIZE);
     this.uvs = new Float32Array(ARRAY_SIZE);
     this.idx = new Uint32Array(ARRAY_SIZE);
     console.log('positions buffernum: ', this.positions.buffer.byteLength);
     console.log('uvs buffernum: ', this.uvs.buffer.byteLength);
-
-    // Setup empty texture atlas
-    this._atlasTexture = throwIfFalsy(gl.createTexture());
-    gl.bindTexture(gl.TEXTURE_2D, this._atlasTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]));
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-    // Set viewport
-    this.onResize();
   }
 
   public debug(): void {
     // console.log(this._vertices.pos_attributes);
   }
 
-  public updateCell(x: number, y: number, code: number, bg: number, fg: number, chars: string): void {
-    this._updateCell(this.positions, this.uvs, this.idx, x, y, code, bg, fg, chars);
+  public updateCell(dimensions: IRenderDimensions,
+    x: number, y: number, code: number, bg: number, fg: number, chars: string): void {
+    this._updateCell(dimensions, this.positions, this.uvs, this.idx, x, y, code, bg, fg, chars);
   }
 
-  private _updateCell(pos_array_: Float32Array, uv_array_: Float32Array, idx_array_: Uint32Array,
+  private _updateCell(dimensions: IRenderDimensions, pos_array_: Float32Array, uv_array_: Float32Array, idx_array_: Uint32Array,
     x_: number, y_: number, code_: number | undefined, bg_: number, fg_: number, chars?: string): void {
     const terminal = this._terminal;
     const offset = (y_ * terminal.cols + x_) * INDICES_PER_CELL;
@@ -85,9 +70,9 @@ export class AframeGlyphRenderer {
       return;
     }
 
-    let fn_scale = this._dimensions.scaledCharHeight / this._dimensions.scaledCanvasHeight;
-    let v_spc = y_ / terminal.rows * this._dimensions.scaledCharHeight;
-    let h_spc = x_ * this._dimensions.scaledCanvasHeight / this._dimensions.scaledCanvasWidth / 2;
+    let fn_scale = dimensions.scaledCharHeight / dimensions.scaledCanvasHeight;
+    let v_spc = y_ / terminal.rows * dimensions.scaledCharHeight;
+    let h_spc = x_ * dimensions.scaledCanvasHeight / dimensions.scaledCanvasWidth / 2;
 
     let top = fn_scale * (rasterizedGlyph.offset.y) - v_spc,
       bottom = fn_scale * (rasterizedGlyph.offset.y - rasterizedGlyph.size.y) - v_spc,
@@ -123,25 +108,9 @@ export class AframeGlyphRenderer {
       ], uv_idx);
   }
 
-  public onResize(): void {
-    const terminal = this._terminal;
-    // Update vertices
-  }
-
-  public render(renderModel: IRenderModel, isSelectionVisible: boolean): void {
-  }
-
   public setAtlas(atlas: WebglCharAtlas): void {
     console.log('setAtlas');
-    const gl = this._gl;
     this._atlas = atlas;
-    gl.bindTexture(gl.TEXTURE_2D, this._atlasTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlas.cacheCanvas);
-    gl.generateMipmap(gl.TEXTURE_2D);
-  }
-
-  public setDimensions(dimensions: IRenderDimensions): void {
-    this._dimensions = dimensions;
   }
 
   public beginFrame(): boolean {
