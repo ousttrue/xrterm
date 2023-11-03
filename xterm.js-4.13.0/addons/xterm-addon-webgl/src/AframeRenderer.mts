@@ -90,14 +90,6 @@ export class AframeRenderer extends Disposable implements IRenderer {
     };
   }
 
-  public get bufferGeometry(): any {
-    return this._glyphRenderer.getBufferGeometry;
-  }
-
-  public get shaderMaterial(): any {
-    return this._glyphRenderer.shaderMaterial;
-  }
-
   public get textureObject(): WebGLTexture | undefined {
     return this._glyphRenderer._atlasTexture;
   }

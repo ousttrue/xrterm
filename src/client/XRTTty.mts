@@ -97,8 +97,8 @@ export default class XRTTty {
   }
 
   tick() {
-    this.term.focus();
     this.aframeaddon.Renderer!.updateRows(0, 24);
+    this.term.focus();
   }
 }
 
