@@ -1,21 +1,14 @@
 <html>
   <head>
-    <link rel="stylesheet" href="./xterm.js-4.13.0/css/xterm.css" />
     <style>
       body {
         background: black;
       }
     </style>
+    <link rel="stylesheet" href="./xterm.js-4.13.0/css/xterm.css" />
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script
-      type="module"
-      src="./src/client/workspace/XRTWorkspace.mts"
-    ></script>
-    <script type="module" src="./src/client/term/XRTTty.mts"></script>
-    <script type="module" src="./src/client/term/XRTTermBare.mts"></script>
-    <script type="module" src="./src/client/term/XRTTermBase.mts"></script>
-    <script type="module" src="./src/client/term/XRTTermDX.mts"></script>
-    <script type="module" src="./src/client/term/XRTTermDemo.mts"></script>
+    <script type="module" src="./src/client/XRTTty.mts"></script>
+    <script type="module" src="./src/client/XRTTermBare.mts"></script>
     <script type="module" src="index.mts"></script>
     <script id="scene" type="text/html">
       <a-scene>
@@ -24,9 +17,6 @@
           <a-plane
             term-bare
             xrtty
-            class="collidable is-drag-on-plane"
-            height="4"
-            width="6"
             rotation="0 0 0"
             position="0 5 -10"
             scale="0.5 0.5 0.5"

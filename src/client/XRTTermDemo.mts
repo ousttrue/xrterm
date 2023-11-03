@@ -1,4 +1,5 @@
 // @ts-check
+import AFRAME from 'aframe'
 
 export default class XRTTermDemo {
   constructor(ws_) {

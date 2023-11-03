@@ -1,6 +1,7 @@
-import basicSsl from '@vitejs/plugin-basic-ssl'
 import fs from 'fs'
-import * as path from "path";
+import path from "path";
+import basicSsl from '@vitejs/plugin-basic-ssl'
+import { importMaps } from 'vite-plugin-import-maps';
 
 export default {
   server: {
@@ -11,6 +12,13 @@ export default {
   },
   plugins: [
     basicSsl(),
+    importMaps([
+      {
+        imports: {
+          "aframe": "https://aframe.io/releases/1.4.0/aframe.min.js",
+        },
+      },
+    ]),
   ],
   resolve: {
     alias: {

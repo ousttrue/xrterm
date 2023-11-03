@@ -1,13 +1,13 @@
 // @ts-check
-import { Terminal } from '../../../xterm.js-4.13.0/src/browser/public/Terminal.mjs';
-import { AframeAddon } from '../../../xterm.js-4.13.0/addons/xterm-addon-webgl/src/AframeAddon.mjs';
+import { Terminal } from '../../xterm.js-4.13.0/src/browser/public/Terminal.mjs';
+import { AframeAddon } from '../../xterm.js-4.13.0/addons/xterm-addon-webgl/src/AframeAddon.mjs';
 
 /*
  * based on aframe-xterm-component by rangermauve
  * MIT license
  */
 
-import CM from '../../Common.mjs';
+import CM from '../Common.mjs';
 const TERMINAL_THEME = {
   theme_foreground: { 'default': '#ffffff' },
   theme_background: { 'default': '#000000' },

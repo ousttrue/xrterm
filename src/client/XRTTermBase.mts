@@ -1,5 +1,6 @@
 // @ts-check
 import CM from '../../Common.mjs';
+import AFRAME from 'aframe'
 import XRTTty from './XRTTty.mjs';
 
 /*

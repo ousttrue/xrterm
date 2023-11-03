@@ -1,5 +1,6 @@
 // @ts-check
 import CM from '../../Common.mjs';
+import AFRAME from 'aframe'
 
 /*
  * based on aframe-xterm-component by rangermauve
